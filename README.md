@@ -37,23 +37,30 @@ This system provides role-based access for **Admins** and **Users** to efficient
 ## ⚙️ Installation & Setup
 
 ### 1️⃣ Clone the repository
+
 ```bash
 git clone https://github.com/<your-username>/Hospital-Management-System.git
 cd Hospital-Management-System
 ```
 
-2️⃣ Create & activate virtual environment
+### 2️⃣ Create & activate virtual environment
+
 python -m venv venv
+
 venv\Scripts\activate   # On Windows
+
 source venv/bin/activate # On Mac/Linux
 
-3️⃣ Install dependencies
+### 3️⃣ Install dependencies
+
 pip install -r requirements.txt
 
-4️⃣ Run the application
+### 4️⃣ Run the application
+
 python app.py
 
-5️⃣ Open in browser
+### 5️⃣ Open in browser
+
 http://127.0.0.1:5000/
 
 ---
