@@ -1,0 +1,46 @@
+{% extends "admin_base.html" %}
+
+{% block title %}
+View Doctors
+{% endblock %}
+
+{% block content %}
+<table class="table table-bordered table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>Doctor ID</th>
+            <th>Doctor Name</th>
+            <th>Specialization</th>
+            <th>Appointments Today</th>
+            <th>Completed</th>
+            <th>Pending</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for doc in doctors %}
+        <tr>
+            <td>{{ doc.id }}</td>
+            <td>{{ doc.name }}</td>
+            <td>{{ doc.specialization }}</td>
+            <td>{{ doc.today_count }}</td>
+            <td>{{ doc.completed_count }}</td>
+            <td>{{ doc.pending_count }}</td>
+            <td>
+                <a href="{{ url_for('admin.view_doctor_detail', doctor_id=doc.id) }}" class="btn btn-info btn-sm">View</a>
+                <a href="{{ url_for('admin.edit_doctor', doctor_id=doc.id) }}" class="btn btn-warning btn-sm">Edit</a>
+                <form method="POST" action="{{ url_for('admin.dashboard') }}" 
+                      style="display:inline;" 
+                      onsubmit="return confirm('Are you sure you want to delete Dr. {{ doc.name }}?');">
+                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="7" class="text-center">No doctors found.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

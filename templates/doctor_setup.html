@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}
+{% if edit_mode %} Edit Doctor {% else %} Doctor Setup {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">
+        {% if edit_mode %} Edit Doctor Profile {% else %} Doctor Setup {% endif %}
+    </h2>
+
+    <form method="POST">
+        {{ form.hidden_tag() }}
+
+        <div class="mb-3">
+            {{ form.specialization.label }}
+            {{ form.specialization(class="form-control" + (" is-invalid" if form.specialization.errors else "")) }}
+            {% for error in form.specialization.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <div class="mb-3">
+            {{ form.available_days.label }}
+            {{ form.available_days(class="form-select" + (" is-invalid" if form.available_days.errors else ""), multiple=True) }}
+            {% for error in form.available_days.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <div class="mb-3">
+            {{ form.available_slots.label }}
+            {{ form.available_slots(class="form-control" + (" is-invalid" if form.available_slots.errors else "")) }}
+            {% for error in form.available_slots.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <div class="mb-3">
+            {{ form.submit(class="btn btn-primary") }}
+        </div>
+    </form
+    
+    {% if edit_mode %}
+        <a href="{{ url_for('admin.view_doctor_detail', doctor_id=form.user_id.data if form.user_id else '') }}" class="btn btn-secondary mt-3">Back to Doctor Details</a>
+    {% else %}
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary mt-3">Back to Dashboard</a>
+    {% endif %}
+</div>
+{% endblock %}
