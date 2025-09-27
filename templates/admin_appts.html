@@ -1,0 +1,42 @@
+{% extends "admin_base.html" %}
+
+{% block title %}
+    Appointments lists
+{% endblock %}
+
+{% block content %}
+
+<h3 class="mt-4">Appointments</h3>
+
+<table class="table table-bordered table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>Appointment ID</th>
+            <th>Patient Name</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Problem</th>
+            <th>Status</th>
+            <th>Treatment</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% if appoitments %}
+            {% for appt in appoitments %}
+                <tr>
+                    <td>{{ appt.id }}</td>
+                    <td>{{ appt.patient.user.name }}</td>
+                    <td>{{ appt.date }}</td>
+                    <td>{{ appt.time }}</td>
+                    <td>{{ appt.problem }}</td>
+                    <td>{{ appt.status }}</td>
+                    <td>{{ appt.treatment if appt.treatment else 'N/A' }}</td>
+                </tr>
+            {% endfor %}
+        {% else %}
+            <tr>
+                <td colspan="7" class="text-center">No appointments found.</td>
+            </tr>
+        {% endif %}
+    </tbody>
+</table>

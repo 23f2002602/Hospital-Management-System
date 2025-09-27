@@ -1,0 +1,56 @@
+{% extends "admin_base.html" %}
+
+{% block title %} 
+        Patients Lists
+{% endblock %}
+
+{% block content %}
+
+<div class="container mt-4">
+    <h2 class="mb-4">
+        Patient Name : {{ patient.name }} <br>
+        Date of Birth: {{ patient.dob.strftime('%Y-%m-%d') }} <br>
+        Age : {{ patient.age }} <br>
+        Phone Number : {{ patient.phone_number }}
+    </h2>
+</div>
+
+<h3 class="mt-4">Appointments</h3>
+
+<table class="table table-bordered table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>Appointment ID</th>
+            <th>Doctor ID</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Problem</th>
+            <th>Status</th>
+            <th>Remarks</th>
+            <th>Rating</th>
+            <th>Treatment</th>      
+        </tr>
+    </thead>
+    <tbody>
+        {% for appt in appointment %}
+        <tr>
+            <td>{{ appt.id }}</td>
+            <td>{{ appt.doctor.id }}</td>
+            <td>{{ appt.date.strftime('%Y-%m-%d') }}</td>
+            <td>{{ appt.time.strftime('%H:%M') }}</td>
+            <td>{{ appt.problem or 'N/A'  }}</td>
+            <td>{{ appt.status }}</td>
+            <td>{{ appt.remarks or 'N/A' }}</td>
+            <td>{{ appt.rating if appt.rating else 'N/A' }} </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="9" class="text-center">No appointments found for this patient.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary mt-3">Back to Dashboard</a>
+
+{% endblock %}

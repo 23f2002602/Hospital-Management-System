@@ -9,6 +9,7 @@ class User(UserMixin, db.Model):
     password = db.Column(db.String(200), nullable=False)  # hashed passwords are long
     role = db.Column(db.String(20), nullable=False)  # Admin / Doctor / Patient
     doctor_profile = db.relationship('Doctor', backref='user', uselist=False)
+    patient_profile = db.relationship('Patient', backref='user', uselist=False)
 
 class Doctor(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -25,7 +26,7 @@ class Doctor(db.Model):
     
 class Patient(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, unique=True)
     dob = db.Column(db.Date, nullable=False)
     phone_number = db.Column(db.String(15), nullable=False)
     appointments = db.relationship('Appointment', backref='patient', lazy=True)

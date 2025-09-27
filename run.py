@@ -74,14 +74,11 @@ def doctor_setup():
     form = DoctorSetupForm()
     
     if form.validate_on_submit():
-        # Suppose form.available_slots.data = ['09:00', '10:00', '11:00']
-        available_slots = ",".join(form.available_slots.data)  # '09:00,10:00,11:00'
-
         doctor = Doctor(
             user_id=current_user.id,
             specialization=form.specialization.data,
-            available_days=",".join(form.available_days.data),  # same for days
-            available_slots=available_slots
+            available_days = ",".join(form.available_days.data),  # same for days
+            available_slots = ",".join(form.available_slots.data)
         )
         db.session.add(doctor)
         db.session.commit()

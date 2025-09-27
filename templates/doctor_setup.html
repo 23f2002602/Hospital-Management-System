@@ -7,43 +7,100 @@
 {% block content %}
 <div class="container mt-4">
     <h2 class="mb-4">
-        {% if edit_mode %} Edit Doctor Profile {% else %} Doctor Setup {% endif %}
+        {% if edit_mode %} Edit {% else %} Setup {% endif %}
+        {% if entity == 'doctor' %} Doctor {% elif entity == 'patient' %} Patient {% else %} Appointment
     </h2>
 
     <form method="POST">
         {{ form.hidden_tag() }}
 
-        <div class="mb-3">
-            {{ form.specialization.label }}
-            {{ form.specialization(class="form-control" + (" is-invalid" if form.specialization.errors else "")) }}
-            {% for error in form.specialization.errors %}
-                <div class="invalid-feedback">{{ error }}</div>
-            {% endfor %}
-        </div>
+        {% if entity == 'doctor' %}
+            <!-- Specialization -->
+            <div class="mb-3">
+                {{ form.specialization.label }}
+                {{ form.specialization(class="form-control" + (" is-invalid" if form.specialization.errors else "")) }}
+                {% for error in form.specialization.errors %}
+                    <div class="invalid-feedback">{{ error }}</div>
+                {% endfor %}
+            </div>
 
-        <div class="mb-3">
-            {{ form.available_days.label }}
-            {{ form.available_days(class="form-select" + (" is-invalid" if form.available_days.errors else ""), multiple=True) }}
-            {% for error in form.available_days.errors %}
-                <div class="invalid-feedback">{{ error }}</div>
-            {% endfor %}
-        </div>
+            <!-- Available Days -->
+            <div class="mb-3">
+                {{ form.available_days.label }}
+                <div>
+                    {% for subfield in form.available_days %}
+                        <div class="form-check form-check-inline">
+                            {{ subfield(class="form-check-input") }}
+                            {{ subfield.label(class="form-check-label") }}
+                        </div>
+                    {% endfor %}
+                </div>
+                {% for error in form.available_days.errors %}
+                    <div class="invalid-feedback d-block">{{ error }}</div>
+                {% endfor %}
+            </div>
 
-        <div class="mb-3">
-            {{ form.available_slots.label }}
-            {{ form.available_slots(class="form-control" + (" is-invalid" if form.available_slots.errors else "")) }}
-            {% for error in form.available_slots.errors %}
-                <div class="invalid-feedback">{{ error }}</div>
-            {% endfor %}
-        </div>
+            <!-- Available Slots -->
+            <div class="mb-3">
+                {{ form.available_slots.label }}
+                <div class="d-flex flex-wrap">
+                    {% for subfield in form.available_slots %}
+                        <div class="form-check m-2">
+                            {{ subfield(class="form-check-input") }}
+                            {{ subfield.label(class="form-check-label") }}
+                        </div>
+                    {% endfor %}
+                </div>
+                {% for error in form.available_slots.errors %}
+                    <div class="invalid-feedback d-block">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="mb-3">
+                {{ form.submit(class="btn btn-primary") }}
+            </div>
+        
+        {% elif entity == 'patient' %}
+            <!-- Patient Name -->
+            <div class="mb-3">
+                {{ form.name.label }}
+                {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else "")) }}
+                {% for error in form.name.errors %}
+                    <div class="invalid-feedback">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Patient Phone Number -->
+            <div class="mb-3">
+                {{ form.phone_number.label }}
+                {{ form.phone_number(class="form-control" + (" is-invalid" if form.phone_number.errors else "")) }}
+                {% for error in form.phone_number.errors %}
+                    <div class="invalid-feedback">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Patient DOB -->
+            <div class="mb-3">
+                {{ form.dob.label }}
+                {{ form.dob(class="form-control" + (" is-invalid" if form.dob.errors else "")) }}
+                {% for error in form.dob.errors %}
+                    <div class="invalid-feedback">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+        {% endif %}
 
         <div class="mb-3">
             {{ form.submit(class="btn btn-primary") }}
         </div>
-    </form
+    </form>
     
     {% if edit_mode %}
-        <a href="{{ url_for('admin.view_doctor_detail', doctor_id=form.user_id.data if form.user_id else '') }}" class="btn btn-secondary mt-3">Back to Doctor Details</a>
+        {% if entity == 'doctor' %}
+            <a href="{{ url_for('admin.view_doctor_detail', doctor_id=form.user_id.data if form.user_id else '') }}" class="btn btn-secondary mt-3">Back to Doctor Details</a>
+        {% else %}
+            <a href="{{ url_for('admin.view_patient_detail', patient_id=patient.id if patient else '') }}" class="btn btn-secondary mt-3">Back to Patient Details</a>
+        {% endif %}
     {% else %}
         <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary mt-3">Back to Dashboard</a>
     {% endif %}

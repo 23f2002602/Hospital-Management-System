@@ -1,6 +1,7 @@
 from routes.routes import *
 from datetime import date
 from models import Appointment
+from sqlalchemy.orm import joinedload
 admin_bp = Blueprint('admin', __name__)
 
 @admin_bp.route('/dashboard')
@@ -124,18 +125,49 @@ def edit_doctor(doctor_id):
     form = DoctorSetupForm(obj = doctor)
 
     if request.method == 'GET':
-        if doctor.available_days :
+        if doctor.available_days:
             form.available_days.data = doctor.available_days.split(',')
-        form.available_slots.data = doctor.available_slots
+        if doctor.available_slots:
+            form.available_slots.data = doctor.available_slots.split(',')
 
-    if form.validate_on_submit:
+    if form.validate_on_submit():
         doctor.specialization = form.specialization.data
-        doctor.available_days = ','.join(form.available_days.data)
-        doctor.available_slots = form.available_slots.data
+        doctor.available_days = ','.join(form.available_days.data) if form.available_days.data else ''
+        doctor.available_slots = ','.join(form.available_slots.data) if form.available_slots.data else ''
 
         db.session.commit()
         flash(f'Doctor {doctor.user.name} updated successfully!', 'success')
         return redirect(url_for('admin.view_doctor_detail', doctor_id=doctor.id))
     
     return render_template('doctor_setup.html', form=form, edit_mode=True)
+
+@admin_bp.route('/patients')
+@login_required
+def view_patients():
+    if current_user.role != 'Admin':
+        flash('Access Denied', 'danger')
+        return redirect(url_for('login'))
+    
+    from models import Patient
+    patients = Patient.query.all()
+    patients_data = []
+
+    for p in patients:
+        today = date.today()
+        age = today.year - p.dob.year - ((today.month, today.day) < (p.dob.month, p.dob.day))
+  
+        latest_appt = None
+        if p.appointments:
+            latest_appt = max(p.appointments, key = lambda appt:(appt.date, appt.time))
+
+        patients_data.append({
+            'id': p.id,
+            'name': p.user.name,
+            'dob': p.dob,
+            'age': age,
+            'phone_number': p.phone_number,
+            'latest_appointment': latest_appt,
+            'total_appointments': len(p.appointments)
+        })
+    return render_template('admin_patients.html', patients=patients_data)
 
