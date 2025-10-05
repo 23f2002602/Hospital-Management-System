@@ -5,6 +5,11 @@ View Doctors
 {% endblock %}
 
 {% block content %}
+
+<h3 class="mt-4">Doctors List</h3>
+
+<br>
+
 <table class="table table-bordered table-striped">
     <thead class="table-dark">
         <tr>
@@ -29,9 +34,9 @@ View Doctors
             <td>
                 <a href="{{ url_for('admin.view_doctor_detail', doctor_id=doc.id) }}" class="btn btn-info btn-sm">View</a>
                 <a href="{{ url_for('admin.edit_doctor', doctor_id=doc.id) }}" class="btn btn-warning btn-sm">Edit</a>
-                <form method="POST" action="{{ url_for('admin.dashboard') }}" 
-                      style="display:inline;" 
-                      onsubmit="return confirm('Are you sure you want to delete Dr. {{ doc.name }}?');">
+                <form method="POST" 
+                    action="{{ url_for('admin.delete_doctor', doctor_id=doc.id) }}" style="display:inline;" 
+                    onsubmit="return confirm('Are you sure you want to delete Dr. {{ doc.name }}?');">
                     <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                 </form>
             </td>
@@ -43,4 +48,7 @@ View Doctors
         {% endfor %}
     </tbody>
 </table>
+<div class="text-center mt-4">
+    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+</div>
 {% endblock %}

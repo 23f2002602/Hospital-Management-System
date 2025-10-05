@@ -1,8 +1,17 @@
 from routes.routes import *
-from datetime import date
-from models import Appointment
+from collections import defaultdict
+from datetime import date, datetime, timedelta
+from models import *
 from sqlalchemy.orm import joinedload
+from sqlalchemy import func, case
+from forms import DoctorSetupForm, AppointmentForm
+from wtforms import StringField, DateField, SubmitField
+from wtforms.validators import DataRequired
+from flask_wtf import FlaskForm
+
 admin_bp = Blueprint('admin', __name__)
+
+# Admin Dashboard
 
 @admin_bp.route('/dashboard')
 @login_required
@@ -21,6 +30,23 @@ def dashboard():
         future_appointments =future_appointments
     )
 
+###  APPOINTMENT MANAGEMENT ###
+
+@admin_bp.route('/appointments')
+@login_required
+def view_appt():
+    if current_user.role != 'Admin':
+        flash('Access Denied', 'danger')
+        return redirect(url_for('login'))
+    
+    all_appointments = Appointment.query.options(
+        joinedload(Appointment.patient).joinedload(Patient.user),
+        joinedload(Appointment.doctor).joinedload(Doctor.user),
+        joinedload(Appointment.treatment)
+    ).order_by(Appointment.date.desc(), Appointment.time.desc()).all()
+
+    return render_template('admin_appts.html', appoitments=all_appointments)
+
 @admin_bp.route('/appointment/delete/<int:appointment_id>', methods=['POST'])
 @login_required
 def delete_appointment(appointment_id):
@@ -34,6 +60,50 @@ def delete_appointment(appointment_id):
     flash('Appointment deleted scuccessfully', 'success')
     return redirect(url_for('admin.dashboard'))
 
+@admin_bp.route('/appointment/<int:appointment_id>', methods=['GET', 'POST'])
+@login_required
+def edit_appt(appointment_id):
+    if current_user.role != 'Admin':
+        flash('Access Denied', 'danger')
+        return redirect(url_for('login'))
+    
+    appt = Appointment.query.get_or_404(appointment_id)
+    form = AppointmentForm(obj=appt)
+
+    all_doctors = Doctor.query.join(User).all()
+    form.doctor_id.choices = [
+        (d.id, f"Dr. {d.user.name} ({d.specialization})") for d in all_doctors
+    ]
+
+    form.patient_id.choices = [(appt.patient.id, appt.patient.user.name)]
+
+    if form.validate_on_submit():
+        try:
+            appt.doctor_id = form.doctor_id.data
+            appt.date = form.date.data
+            appt.time = datetime.strptime(form.time.data, '%H:%M').time()
+            appt.problem = form.problem.data
+
+            db.session.commit()
+            flash('Appointment updated successfully', 'success')
+            return redirect(url_for('admin.dashboard'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f"An error occurred while updating: {e}", "danger")
+
+    if request.method == 'GET':
+        form.doctor_id.data = appt.doctor_id
+        # We also need to populate available time slots for the currently selected doctor
+        if appt.doctor.availability:
+             slots = appt.doctor.availability.filter_by(day=DayOfWeek[appt.date.strftime('%A').upper()]).all()
+             form.time.choices = [(s.start_time.strftime('%H:%M'), s.start_time.strftime('%H:%M')) for s in slots]
+        form.time.data = appt.time.strftime('%H:%M')
+
+
+    return render_template('doctor_setup.html', form=form,edit_more = True, appointment=appt)
+
+### DOCTOR MANAGEMENT ###
+
 @admin_bp.route('/doctors')
 @login_required
 def view_doctors():
@@ -42,104 +112,136 @@ def view_doctors():
         flash('Access Denied', 'danger')
         return redirect(url_for('login'))
     
-    # Get all doctors
-    from models import Doctor
-    doctors = Doctor.query.all()
-    doctor_data = []
-
-    for doc in doctors:
-        # Count appointments for today
-        today_count = Appointment.query.filter_by(doctor_id=doc.id, date=date.today()).count()
-        # Count completed appointments
-        completed_count = Appointment.query.filter_by(doctor_id=doc.id, status='Completed').count()
-        # Count pending appointments
-        pending_count = Appointment.query.filter_by(doctor_id=doc.id, status='Pending').count()
+    doctors_with_stats = db.session.query(
+        Doctor,
+        func.count(case((Appointment.status == AppointmentStatus.COMPLETED, Appointment.id))).label('completed_count'),
+        func.count(case((Appointment.status == AppointmentStatus.BOOKED, Appointment.id))).label('pending_count'),
+        func.count(case((Appointment.date == date.today(), Appointment.id))).label('today_count')
+    ).outerjoin(Appointment).group_by(Doctor.id).all()
 
         # Append data as a dict
-        doctor_data.append({
-            'id': doc.id,
-            'name': doc.user.name if doc.user else 'N/A',
-            'specialization': doc.specialization,
-            'today_count': today_count,
-            'completed_count': completed_count,
-            'pending_count': pending_count
-        })
+    doctor_data = [{
+        'id': doc.id,
+        'name': doc.user.name if doc.user else 'N/A',
+        'specialization': doc.specialization,
+        'today_count': today_count,
+        'completed_count': completed_count,
+        'pending_count': pending_count
+    } for doc, completed_count, pending_count, today_count in doctors_with_stats]
 
     return render_template(
-        'admin_doctors.html',  # make sure template is in templates/ folder
+        'admin_doctors.html',
         doctors=doctor_data
     )
 
 @admin_bp.route('/doctor/<int:doctor_id>')
 @login_required
 def view_doctor_detail(doctor_id):
-    # Only Admin can access
     if not current_user.role == 'Admin':
         flash('Access Denied', 'danger')
         return redirect(url_for('login'))
-
-    # Get doctor
-    from models import Doctor
+    
     doctor = Doctor.query.get_or_404(doctor_id)
+    availability_schedule = defaultdict(list)
 
-    # Convert available_days and available_slots from string to list if needed
-    available_days = doctor.available_days
-    if isinstance(available_days, str):
-        available_days = available_days.split(',') if doctor.available_days else []
-
-    available_slots = doctor.available_slots
-    if isinstance(available_slots, str):
-        available_slots = available_slots.split(',') if doctor.available_slots else []
-
-    # Appointments
+    slots = DoctorAvailability.query.filter_by(doctor_id=doctor.id).order_by(
+        DoctorAvailability.day, 
+        DoctorAvailability.start_time
+    ).all()
+    for slot in slots:
+        time_format = f"{slot.start_time.strftime('%H:%M')}"
+        availability_schedule[slot.day.value].append(time_format)
+    
     appointments = Appointment.query.filter_by(doctor_id=doctor.id).all()
 
-    # Count appointments
     today = date.today()
     today_count = sum(1 for appt in appointments if appt.date == today)
-    completed_count = sum(1 for appt in appointments if appt.status == 'Completed')
-    pending_count = sum(1 for appt in appointments if appt.status != 'Completed')
+    completed_count = sum(1 for appt in appointments if appt.status == AppointmentStatus.COMPLETED)
+    pending_count = sum(1 for appt in appointments if appt.status == AppointmentStatus.BOOKED)
 
     return render_template(
         'admin_doctor_detail.html',
         doctor=doctor,
-        available_days=available_days,
-        available_slots=available_slots,
+        availability_schedule=availability_schedule, 
         appointments=appointments,
         today_count=today_count,
         completed_count=completed_count,
         pending_count=pending_count
     )
 
-@admin_bp.route('/doctor/<int:doctor_id>', methods = ["GET", "POST"])
+@admin_bp.route('/doctor/edit/<int:doctor_id>', methods = ["GET", "POST"])
 @login_required
 def edit_doctor(doctor_id):
     if current_user.role != 'Admin':
         flash('Access Denied', 'danger')
         return redirect(url_for('login'))
-    
-    from models import Doctor
-    from forms import DoctorSetupForm
 
     doctor = Doctor.query.get_or_404(doctor_id)
     form = DoctorSetupForm(obj = doctor)
 
     if request.method == 'GET':
-        if doctor.available_days:
-            form.available_days.data = doctor.available_days.split(',')
-        if doctor.available_slots:
-            form.available_slots.data = doctor.available_slots.split(',')
+        existing_slots = DoctorAvailability.query.filter_by(doctor_id=doctor.id).all()
+        if existing_slots:
+            days_set = {slot.day.name for slot in existing_slots}
+            slots_set = {slot.start_time.strftime('%H:%M') for slot in existing_slots}
 
+            form.available_days.data = list(days_set)
+            form.available_slots.data = list(slots_set)
     if form.validate_on_submit():
-        doctor.specialization = form.specialization.data
-        doctor.available_days = ','.join(form.available_days.data) if form.available_days.data else ''
-        doctor.available_slots = ','.join(form.available_slots.data) if form.available_slots.data else ''
+        try:
+            doctor.specialization = form.specialization.data
+            DoctorAvailability.query.filter_by(doctor_id=doctor.id).delete()
+            selected_days = form.available_days.data
+            selected_slots = form.available_slots.data
 
-        db.session.commit()
-        flash(f'Doctor {doctor.user.name} updated successfully!', 'success')
-        return redirect(url_for('admin.view_doctor_detail', doctor_id=doctor.id))
+            for day_str in selected_days:
+                day_enum = DayOfWeek[day_str.upper()]
+                for slot_str in selected_slots:
+                    start_time = datetime.strptime(slot_str, '%H:%M').time()
+                    end_time_dt = datetime.combine(datetime.today(), start_time) + timedelta(minutes=30)
+                    end_time = end_time_dt.time()
+
+                    new_slot = DoctorAvailability(
+                        doctor_id=doctor.id,
+                        day=day_enum,
+                        start_time=start_time,
+                        end_time=end_time
+                    )
+                    db.session.add(new_slot)
+            db.session.commit()
+
+            flash(f'Doctor {doctor.user.name}\'s profile has been updated successfully!', 'success')
+            return redirect(url_for('admin.view_doctor_detail', doctor_id=doctor.id))
+
+        except Exception as e:
+            db.session.rollback()
+            flash(f"An error occurred while updating: {e}", "danger")
+
+    return render_template('doctor_setup.html', form=form, edit_mode=True, doctor=doctor, entity='doctor')
+
+
+@admin_bp.route('/doctor/delete/<int:doctor_id>', methods=['GET', 'POST'])
+@login_required
+def delete_doctor(doctor_id):
+    if current_user != 'Admin':
+        flash('Access Denied', 'danger')
+        return redirect(url_for('login'))
+
+    doctor = Doctor.query.get_or_404(doctor_id)
+    user = User.query.get(doctor.user_id)
+
+    db.session.delete(doctor)
+    if user and user.role == 'Doctor':
+        db.session.delete(user)
     
-    return render_template('doctor_setup.html', form=form, edit_mode=True)
+    db.session.commit()
+
+    flash('Doctor and associated data deleted successfully', 'success')
+    return redirect(url_for('admin.view_doctors'))
+
+
+### PATIENT MANAGEMENT ###
+
 
 @admin_bp.route('/patients')
 @login_required
@@ -171,3 +273,75 @@ def view_patients():
         })
     return render_template('admin_patients.html', patients=patients_data)
 
+
+@admin_bp.route('/patient/<int:patient_id>')
+@login_required
+def view_patient_detail(patient_id):
+    if current_user.role != "Admin" :
+        flash('Access Denied', 'danger')
+        return redirect(url_for('login'))
+    
+    from models import Patient, Appointment
+    patient = Patient.query.get_or_404(patient_id)
+    appointments_list = Appointment.query.filter_by(patient_id=patient.id).all()
+
+    return render_template('admin_view_patient.html',appointment=appointments_list, patient=patient)
+
+
+@admin_bp.route('/patient/delete/<int:patient_id>', methods = ["GET", "POST"])
+@login_required
+def delete_patient(patient_id):
+    if current_user.role != 'Admin':
+        flash('Access Denied', 'danger')
+        return redirect(url_for('login'))
+    
+    patient = Patient.query.get_or_404(patient_id)
+    user = User.query.get(patient.user_id)
+
+    # Delete associated appointments and treatments
+    for appt in patient.appointments:
+        if appt.treatment:
+            db.session.delete(appt.treatment)
+        db.session.delete(appt)
+    
+    db.session.delete(patient)
+    if user:
+        db.session.delete(user)
+    
+    db.session.commit()
+    flash('Patient and associated data deleted successfully', 'success')
+    return redirect(url_for('admin.view_patients'))
+
+@admin_bp.route('/patient/edit/<int:patient_id>', methods=['GET', 'POST'])
+@login_required
+def edit_patient(patient_id):
+    if current_user.role != 'Admin':
+        flash('Access Denied', 'danger')
+        return redirect(url_for('login'))
+    
+    patient = Patient.query.get_or_404(patient_id)
+    user = User.query.get_or_404(patient.user_id)
+
+    from forms import PatientSetupForm
+    form = PatientSetupForm(obj=patient)
+
+    if form.validate_on_submit():
+        try:
+            user.name = form.name.data
+            patient.dob = form.dob.data
+            patient.phone_number = form.phone_number.data
+
+            db.session.commit()
+            flash('Patient details updated successfully', 'success')
+            return redirect(url_for('admin.view_patients', patient_id=patient.id))
+        
+        except Exception as e:
+            db.session.rollback()
+            flash(f"An error occurred while updating: {e}", "danger")
+    
+    if request.method == 'GET':
+        form.name.data = user.name
+        form.phone_number.data = patient.phone_number
+        form.dob.data = patient.dob
+
+    return render_template('edit_patient.html', form=form, patient=patient, edit_mode =True, entity = 'patient')

@@ -1,5 +1,20 @@
+import enum
 from database import db
-from flask_login import LoginManager, login_user, logout_user, login_required, current_user, UserMixin
+from flask_login import UserMixin
+
+class AppointmentStatus(enum.Enum):
+    BOOKED = "Booked"
+    COMPLETED = "Completed"
+    CANCELLED = "Cancelled"
+
+class DayOfWeek(enum.Enum):
+    MONDAY = "Monday"
+    TUESDAY = "Tuesday"
+    WEDNESDAY = "Wednesday"
+    THURSDAY = "Thursday"
+    FRIDAY = "Friday"
+    SATURDAY = "Saturday"
+    SUNDAY = "Sunday"
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -11,12 +26,21 @@ class User(UserMixin, db.Model):
     doctor_profile = db.relationship('Doctor', backref='user', uselist=False)
     patient_profile = db.relationship('Patient', backref='user', uselist=False)
 
+class DoctorAvailability(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    doctor_id = db.Column(db.Integer, db.ForeignKey('doctor.id'), nullable=False)
+    day = db.Column(db.Enum(DayOfWeek), nullable=False)
+    start_time = db.Column(db.Time, nullable=False)
+    end_time = db.Column(db.Time, nullable=False)
+    
+    # Ensures a doctor can't have overlapping slots on the same day
+    __table_args__ = (db.UniqueConstraint('doctor_id', 'day', 'start_time', name='_doctor_day_start_uc'),)
+
 class Doctor(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, unique=True)
     specialization = db.Column(db.String(50), nullable=False)
-    available_days = db.Column(db.String(100), nullable=False)  # e.g., "Mon,Tue,Wed"
-    available_slots = db.Column(db.String(200), nullable=True)  # e.g., "09:00,10:00,11:00"
+    availability = db.relationship('DoctorAvailability', backref='doctor', lazy='dynamic', cascade="all, delete-orphan")
     appointments = db.relationship('Appointment', backref='doctor', lazy=True)
 
     def get_slots(self):
@@ -38,7 +62,7 @@ class Appointment(db.Model):
     date = db.Column(db.Date, nullable=False)
     time = db.Column(db.Time, nullable=False)
     problem = db.Column(db.String(300), nullable=True)
-    status = db.Column(db.String(50))  # Booked / Completed / Cancelled
+    status = db.Column(db.Enum(AppointmentStatus), default=AppointmentStatus.BOOKED, nullable=False)
     remarks = db.Column(db.Text, nullable=True) 
     rating = db.Column(db.Integer, nullable=True)
     treatment = db.relationship('Treatment', backref='appointment', uselist=False)

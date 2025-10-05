@@ -2,6 +2,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, SelectField, IntegerField, DateField, TimeField, TextAreaField, SelectMultipleField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, NumberRange
 from wtforms import widgets
+from models import DayOfWeek
 
 class LoginForm(FlaskForm):
     email = StringField('Email', validators = [DataRequired(), Email()])
@@ -17,16 +18,20 @@ class RegisterForm(FlaskForm):
     role = SelectField('Role', choices=[('Patient', 'Patient'), ('Doctor', 'Doctor')], validators=[DataRequired()])
     submit = SubmitField('Register')
 
+class PatientSetupForm(FlaskForm):
+    name = StringField('Full Name', validators=[DataRequired()])
+    dob = DateField('Date of Birth', validators=[DataRequired()])
+    phone_number = StringField('Phone Number', validators=[DataRequired()])
+    submit = SubmitField('Complete Profile')
+
 class DoctorSetupForm(FlaskForm):
     specialization = StringField('Specialization', validators=[DataRequired()])
     available_days = SelectMultipleField(
         "Available Days",
-        choices=[
-            ("Mon", "Monday"), ("Tue", "Tuesday"), ("Wed", "Wednesday"),
-            ("Thu", "Thursday"), ("Fri", "Friday"), ("Sat", "Saturday"), ("Sun", "Sunday")
-        ],
+        choices=[(day.name, day.value) for day in DayOfWeek],
         option_widget=widgets.CheckboxInput(),
         widget=widgets.ListWidget(prefix_label=False),
+        validators=[DataRequired()]
     )
     available_slots = SelectMultipleField(
         "Available Slots",
@@ -49,11 +54,11 @@ class DoctorSetupForm(FlaskForm):
         option_widget=widgets.CheckboxInput(),
         widget=widgets.ListWidget(prefix_label=False),
     )
-    submit = SubmitField('Add/Update Doctor')
+    submit = SubmitField('Save Profile')
 
 class AppointmentForm(FlaskForm):
-    doctor_id = SelectField('Doctor', coerce=int)
-    patient_id = SelectField('Patient', coerce=int)
+    doctor_id = SelectField('Doctor', coerce=int, validators=[DataRequired()])
+    patient_id = SelectField('Patient', coerce=int, validators=[DataRequired()])
     date = DateField('Date', validators=[DataRequired()])
     time = SelectField('Time', coerce=str)  # dynamic slots
     problem = StringField('Problem', validators=[DataRequired()])

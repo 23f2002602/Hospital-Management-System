@@ -1,7 +1,7 @@
 {% extends "admin_base.html" %}
 
 {% block title %} 
-        Patients Lists
+        Patient Details
 {% endblock %}
 
 {% block content %}
@@ -9,9 +9,11 @@
 <div class="container mt-4">
     <h2 class="mb-4">
         Patient Name : {{ patient.name }} <br>
-        Date of Birth: {{ patient.dob.strftime('%Y-%m-%d') }} <br>
-        Age : {{ patient.age }} <br>
-        Phone Number : {{ patient.phone_number }}
+        Patient Name: {{ patient.user.name }} <br>
+        <small class="text-muted">
+            Date of Birth: {{ patient.dob.strftime('%Y-%m-%d') }} <br>
+            Phone Number: {{ patient.phone_number }}
+        </small>
     </h2>
 </div>
 
@@ -21,7 +23,7 @@
     <thead class="table-dark">
         <tr>
             <th>Appointment ID</th>
-            <th>Doctor ID</th>
+            <th>Doctor Name</th>
             <th>Date</th>
             <th>Time</th>
             <th>Problem</th>
@@ -35,13 +37,14 @@
         {% for appt in appointment %}
         <tr>
             <td>{{ appt.id }}</td>
-            <td>{{ appt.doctor.id }}</td>
+            <td>{{ appt.doctor.user.name }}</td>
             <td>{{ appt.date.strftime('%Y-%m-%d') }}</td>
             <td>{{ appt.time.strftime('%H:%M') }}</td>
             <td>{{ appt.problem or 'N/A'  }}</td>
-            <td>{{ appt.status }}</td>
+            <td>{{ appt.status.value }}</td> 
             <td>{{ appt.remarks or 'N/A' }}</td>
             <td>{{ appt.rating if appt.rating else 'N/A' }} </td>
+            <td>{{ appt.treatment.disease if appt.treatment else 'N/A' }}</td>
         </tr>
         {% else %}
         <tr>
@@ -52,5 +55,7 @@
 </table>
 
 <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary mt-3">Back to Dashboard</a>
+<br>
+<a href="{{ url_for('admin.view_patients') }}" class="btn btn-secondary mt-3">Back to Patients List</a>
 
 {% endblock %}
