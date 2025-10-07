@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "admin_base.html" %}
 
 {% block title %}
 {% if edit_mode %} Edit {% else %} Doctor Setup {% endif %}
@@ -8,7 +8,7 @@
 <div class="container mt-4">
     <h2 class="mb-4">
         {% if edit_mode %} Edit {% else %} Setup {% endif %}
-        {% if entity == 'doctor' %} Doctor {% elif entity == 'patient' %} Patient {% else %} Appointment
+        {% if entity == 'doctor' %} Doctor {% elif entity == 'patient' %} Patient {% else %} Appointment {% endif %}
     </h2>
 
     <form method="POST">
@@ -27,15 +27,15 @@
 
             <!-- Available Days -->
              <div class="mb-3">
-    +           {{ form.available_days.label(class="form-label") }}
-    +           <div class="border p-2 rounded">
+               {{ form.available_days.label(class="form-label") }}
+               <div class="border p-2 rounded">
                     {% for subfield in form.available_days %}
                         <div class="form-check form-check-inline">
                             {{ subfield(class="form-check-input") }}
                             {{ subfield.label(class="form-check-label") }}
                         </div>
                     {% endfor %}
-    +           </div>
+               </div>
                 {% for error in form.available_days.errors %}
                     <div class="invalid-feedback d-block">{{ error }}</div>
                 {% endfor %}
@@ -43,15 +43,15 @@
 
             <!-- Available Slots -->
             <div class="mb-3">
-    +           {{ form.available_slots.label(class="form-label") }}
-    +           <div class="border p-2 rounded d-flex flex-wrap">
+             {{ form.available_slots.label(class="form-label") }}
+               <div class="border p-2 rounded d-flex flex-wrap">
                     {% for subfield in form.available_slots %}
-    +                   <div class="form-check m-2" style="width: 100px;">
+                       <div class="form-check m-2" style="width: 100px;">
                             {{ subfield(class="form-check-input") }}
                             {{ subfield.label(class="form-check-label") }}
                         </div>
                     {% endfor %}
-    +           </div>
+               </div>
                 {% for error in form.available_slots.errors %}
                     <div class="invalid-feedback d-block">{{ error }}</div>
                 {% endfor %}
@@ -140,7 +140,7 @@
         {% if entity == 'doctor' %}
             <a href="{{ url_for('admin.view_doctor_detail', doctor_id=form.user_id.data if form.user_id else '') }}" class="btn btn-secondary mt-3">Back to Doctor Details</a>
         {% elif entity == 'patient' %}
-            <a href="{{ url_for('admin.view_patients' }}" class="btn btn-secondary mt-3">Back to Patient Details</a>
+            <a href="{{ url_for('admin.view_patients') }}" class="btn btn-secondary mt-3">Back to Patient Details</a>
         {% else %}
             <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary mt-3">Back to Dashboard</a>
         {% endif %}

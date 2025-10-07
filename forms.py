@@ -30,8 +30,7 @@ class DoctorSetupForm(FlaskForm):
         "Available Days",
         choices=[(day.name, day.value) for day in DayOfWeek],
         option_widget=widgets.CheckboxInput(),
-        widget=widgets.ListWidget(prefix_label=False),
-        validators=[DataRequired()]
+        widget=widgets.ListWidget(prefix_label=False) 
     )
     available_slots = SelectMultipleField(
         "Available Slots",

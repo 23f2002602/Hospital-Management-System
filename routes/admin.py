@@ -100,7 +100,7 @@ def edit_appt(appointment_id):
         form.time.data = appt.time.strftime('%H:%M')
 
 
-    return render_template('doctor_setup.html', form=form,edit_more = True, appointment=appt)
+    return render_template('doctor_setup.html', form=form, edit_more = True, appointment=appt, entity = 'appointment')
 
 ### DOCTOR MANAGEMENT ###
 

@@ -25,14 +25,14 @@ def login() :
                     flash('Please complete your profile before proceeding.', 'info')
                     return redirect(url_for('doctor_setup'))
                 flash('Login Successful !', "success")
-                return redirect(url_for('doctor.dashboard'))
+                return redirect(url_for('admin.dashboard'))
             
             elif user.role == 'Patient': # PATIENT
                 if not user.patient_profile:
                     flash('Please complete your profile before proceeding.', 'info')
                     return redirect(url_for('patient_setup'))
                 flash('Login Successful !', "success")
-                return redirect (url_for('patient.dashboard'))
+                return redirect (url_for('admin.dashboard'))
         else:
             flash('Login Failed. Check email and password', 'danger')
     
@@ -68,18 +68,17 @@ def register():
             db.session.add(new_user)
             db.session.commit()
 
-            flash('Account created successfully! Please login.', 'success')
+            login_user(new_user)
+            if new_user.role == 'Doctor':
+                flash('Account created! Please complete your doctor profile.', 'success')
+                return redirect(url_for('doctor_setup'))
+            elif new_user.role == 'Patient':
+                flash('Account created! Please complete your patient profile.', 'success')
+                return redirect(url_for('patient_setup'))
             
             return redirect(url_for('login'))
 
     return render_template('register.html', form = registerform)
-
-# In run.py
-
-# Make sure all necessary models and forms are imported at the top
-from forms import DoctorSetupForm
-from models import db, Doctor, DoctorAvailability, DayOfWeek
-from datetime import datetime, timedelta
 
 @app.route('/doctor/setup', methods=['GET', 'POST'])
 @login_required
@@ -141,7 +140,7 @@ def patient_setup():
         return redirect(url_for('login'))
     if current_user.patient_profile:
         flash('You have already complted your profile setup.', 'info')
-        return redirect(url_for('patient.dashaboard'))
+        return redirect(url_for('patient.dashboard'))
     
     form = PatientSetupForm()
 

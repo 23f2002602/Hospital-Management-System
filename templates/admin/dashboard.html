@@ -65,8 +65,8 @@
                         <td>{{ appt.id }}</td>
                         <td>{{ appt.doctor.id }}</td>
                         <td>{{ appt.doctor.user.name }}</td>
-                        <td>{{ appt.patient.name }}</td>
-                        <td>{{ appt.problem }}</td>
+                        <td>{{ appt.patient.user.name }}</td>
+                        <td>{{ appt.patient.problem }}</td>
                         <td>{{ appt.date }}</td>
                         <td>{{ appt.time.strftime('%H:%M') }}</td>
                         <td>
