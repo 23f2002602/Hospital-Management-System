@@ -57,7 +57,6 @@ class DoctorSetupForm(FlaskForm):
 
 class AppointmentForm(FlaskForm):
     doctor_id = SelectField('Doctor', coerce=int, validators=[DataRequired()])
-    patient_id = SelectField('Patient', coerce=int, validators=[DataRequired()])
     date = DateField('Date', validators=[DataRequired()])
     time = SelectField('Time', coerce=str)  # dynamic slots
     problem = StringField('Problem', validators=[DataRequired()])

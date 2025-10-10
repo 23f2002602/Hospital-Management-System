@@ -1,0 +1,62 @@
+{% extends "patient/patient_base.html" %}
+
+{% block title %} 
+    Booking New Appointment
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">{{ title }}</h3>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Please fill out the details below to schedule your visit.</p>
+                    
+                    <form method="POST" action="" novalidate>
+                        {{ form.csrf_token }}
+
+                        <div class="mb-3">
+                            {{ form.doctor_id.label(class="form-label fw-bold") }}
+                            {{ form.doctor_id(class="form-select") }}
+                            {% for error in form.doctor_id.errors %}
+                                <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.date.label(class="form-label fw-bold") }}
+                            {{ form.date(class="form-control") }}
+                            {% for error in form.date.errors %}
+                                <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.time.label(class="form-label fw-bold") }}
+                            {{ form.time(class="form-select") }}
+                            {% for error in form.time.errors %}
+                                <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mb-4">
+                            {{ form.problem.label(class="form-label fw-bold") }}
+                            {{ form.problem(class="form-control", placeholder="e.g., Annual check-up, flu symptoms...") }}
+                            {% for error in form.problem.errors %}
+                                <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="d-grid">
+                           {{ form.submit(class="btn btn-primary btn-lg") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

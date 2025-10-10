@@ -1,13 +1,4 @@
 from routes.routes import *
-from collections import defaultdict
-from datetime import date, datetime, timedelta
-from models import *
-from sqlalchemy.orm import joinedload
-from sqlalchemy import func, case
-from forms import DoctorSetupForm, AppointmentForm
-from wtforms import StringField, DateField, SubmitField
-from wtforms.validators import DataRequired
-from flask_wtf import FlaskForm
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -25,7 +16,7 @@ def dashboard():
     future_appointments = Appointment.query.filter(Appointment.date > today).order_by(Appointment.date).all()
 
     return render_template(
-        'admin_dashboard.html',
+        'admin/dashboard.html',
         todays_appointments = todays_appointments,
         future_appointments =future_appointments
     )
@@ -45,7 +36,7 @@ def view_appt():
         joinedload(Appointment.treatment)
     ).order_by(Appointment.date.desc(), Appointment.time.desc()).all()
 
-    return render_template('admin_appts.html', appoitments=all_appointments)
+    return render_template('admin/appts.html', appoitments=all_appointments)
 
 @admin_bp.route('/appointment/delete/<int:appointment_id>', methods=['POST'])
 @login_required
@@ -100,7 +91,7 @@ def edit_appt(appointment_id):
         form.time.data = appt.time.strftime('%H:%M')
 
 
-    return render_template('doctor_setup.html', form=form, edit_more = True, appointment=appt, entity = 'appointment')
+    return render_template('admin/doctor_setup.html', form=form, edit_more = True, appointment=appt, entity = 'appointment')
 
 ### DOCTOR MANAGEMENT ###
 
@@ -130,7 +121,7 @@ def view_doctors():
     } for doc, completed_count, pending_count, today_count in doctors_with_stats]
 
     return render_template(
-        'admin_doctors.html',
+        'admin/doctors.html',
         doctors=doctor_data
     )
 
@@ -160,7 +151,7 @@ def view_doctor_detail(doctor_id):
     pending_count = sum(1 for appt in appointments if appt.status == AppointmentStatus.BOOKED)
 
     return render_template(
-        'admin_doctor_detail.html',
+        'admin/doctor_detail.html',
         doctor=doctor,
         availability_schedule=availability_schedule, 
         appointments=appointments,
@@ -217,7 +208,7 @@ def edit_doctor(doctor_id):
             db.session.rollback()
             flash(f"An error occurred while updating: {e}", "danger")
 
-    return render_template('doctor_setup.html', form=form, edit_mode=True, doctor=doctor, entity='doctor')
+    return render_template('admin/doctor_setup.html', form=form, edit_mode=True, doctor=doctor, entity='doctor')
 
 
 @admin_bp.route('/doctor/delete/<int:doctor_id>', methods=['GET', 'POST'])
@@ -271,7 +262,7 @@ def view_patients():
             'latest_appointment': latest_appt,
             'total_appointments': len(p.appointments)
         })
-    return render_template('admin_patients.html', patients=patients_data)
+    return render_template('admin/patients.html', patients=patients_data)
 
 
 @admin_bp.route('/patient/<int:patient_id>')
@@ -285,7 +276,7 @@ def view_patient_detail(patient_id):
     patient = Patient.query.get_or_404(patient_id)
     appointments_list = Appointment.query.filter_by(patient_id=patient.id).all()
 
-    return render_template('admin_view_patient.html',appointment=appointments_list, patient=patient)
+    return render_template('admin/view_patient.html',appointment=appointments_list, patient=patient)
 
 
 @admin_bp.route('/patient/delete/<int:patient_id>', methods = ["GET", "POST"])
@@ -344,4 +335,4 @@ def edit_patient(patient_id):
         form.phone_number.data = patient.phone_number
         form.dob.data = patient.dob
 
-    return render_template('edit_patient.html', form=form, patient=patient, edit_mode =True, entity = 'patient')
+    return render_template('admin/doctor_setup.html', form=form, patient=patient, edit_mode =True, entity = 'patient')

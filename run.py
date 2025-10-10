@@ -130,7 +130,7 @@ def doctor_setup():
             db.session.rollback()
             flash(f"An error occurred: {e}", "danger")
 
-    return render_template("doctor_setup.html", form=form, entity='doctor', edit_mode=False)
+    return render_template("admin/doctor_setup.html", form=form, entity='doctor', edit_mode=False)
 
 @app.route('/patient/setup', methods=['GET', 'POST'])
 @login_required
@@ -167,7 +167,7 @@ def patient_setup():
         form.name.data = current_user.name
 
     return render_template(
-        "doctor_setup.html", form=form, entity='patient', edit_mode=False)
+        "admin/doctor_setup.html", form=form, entity='patient', edit_mode=False)
 
 @app.route('/logout')
 @login_required
