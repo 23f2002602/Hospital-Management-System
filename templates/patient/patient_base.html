@@ -17,14 +17,15 @@
             <a class="navbar-brand" href="{{ url_for('patient.dashboard') }}">Admin Panel</a>
             <ul class="navbar-nav me-auto">
             <li class="nav-item"><a class="nav-link" href="{{ url_for('patient.dashboard') }}">Dashboard</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('patient.list_doctors') }}">Doctors</a></li>
             <li class="nav-item"><a class="nav-link" href="{{ url_for('patient.book_appt') }}#patients">Appointment Booking</a></li>
             <li class="nav-item"><a class="nav-link" href="{{ url_for('patient.edit_profile') }}#patients">Edit Profile</a></li>
             <li class="nav-item"><a class="nav-link" href="{{ url_for('patient.dashboard') }}#summary">Summary</a></li>
             <li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}#logout">Logout</a></li>
             </ul>
             <form class="d-flex" method="GET" action="{{ url_for('patient.dashboard') }}">
-            <input class="form-control me-2" type="search" placeholder="Search doctors or appointments" name="q">
-            <button class="btn btn-outline-primary" type="submit">Search</button>
+              <input class="form-control me-2" type="search" placeholder="Search doctors or appointments" name="q">
+              <button class="btn btn-outline-primary" type="submit">Search</button>
             </form>
         </div>
     </nav>

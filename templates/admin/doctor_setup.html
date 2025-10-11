@@ -1,4 +1,4 @@
-{% extends "admin_base.html" %}
+{% extends "admin/base.html" %}
 
 {% block title %}
 {% if edit_mode %} Edit {% else %} Doctor Setup {% endif %}
@@ -138,7 +138,7 @@
     {% if edit_mode %}
 
         {% if entity == 'doctor' %}
-            <a href="{{ url_for('admin.view_doctor_detail', doctor_id=form.user_id.data if form.user_id else '') }}" class="btn btn-secondary mt-3">Back to Doctor Details</a>
+            <a href="{{ url_for('admin.view_doctor_detail', doctor_id=doctor.id) }}" class="btn btn-secondary mt-3">Back to Doctor Details</a>
         {% elif entity == 'patient' %}
             <a href="{{ url_for('admin.view_patients') }}" class="btn btn-secondary mt-3">Back to Patient Details</a>
         {% else %}

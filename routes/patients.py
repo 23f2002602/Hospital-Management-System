@@ -1,3 +1,4 @@
+from flask import jsonify
 from routes.routes import *
 from models import *
 from forms import FeedbackForm, PatientSetupForm, AppointmentForm
@@ -193,3 +194,35 @@ def book_appt():
     
     return render_template('patient/Appt_booking.html', form=form)
 
+@patient_bp.route('/doctors')
+@login_required
+def list_doctors():
+    doctors = Doctor.query.join(User).all()
+    availability_by_doctor = {}
+
+    for doctor in doctors:
+        availability = DoctorAvailability.query.filter_by(doctor_id=doctor.id).all()
+        availability_by_doctor[doctor.id] = {
+            'days': sorted(list(set([avail.day.value for avail in availability]))),
+            'slots': sorted(list(set([avail.start_time.strftime('%H:%M') for avail in availability])))
+        }
+
+    return render_template('patient/list_doctors.html', doctors=doctors, availability_by_doctor=availability_by_doctor)
+
+@patient_bp.route('/get-slots/<int:doctor_id>/<string:date_str>')
+@login_required
+def get_slots(doctor_id, date_str):
+    try:
+        selected_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        day_of_week = selected_date.strftime('%A').upper()
+
+        available_slots = DoctorAvailability.query.filter_by(
+            doctor_id=doctor_id,
+            day=DayOfWeek[day_of_week]
+        ).all()
+
+        slots = [slot.start_time.strftime('%H:%M') for slot in available_slots]
+        return jsonify(slots)
+
+    except (ValueError, KeyError):
+        return jsonify([])

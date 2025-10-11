@@ -214,10 +214,10 @@ def edit_doctor(doctor_id):
 @admin_bp.route('/doctor/delete/<int:doctor_id>', methods=['GET', 'POST'])
 @login_required
 def delete_doctor(doctor_id):
-    if current_user != 'Admin':
+    if current_user.role != 'Admin':
         flash('Access Denied', 'danger')
         return redirect(url_for('login'))
-
+    
     doctor = Doctor.query.get_or_404(doctor_id)
     user = User.query.get(doctor.user_id)
 
