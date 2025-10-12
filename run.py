@@ -25,14 +25,14 @@ def login() :
                     flash('Please complete your profile before proceeding.', 'info')
                     return redirect(url_for('doctor_setup'))
                 flash('Login Successful !', "success")
-                return redirect(url_for('admin.dashboard'))
+                return redirect(url_for('doctor.dashboard'))
             
             elif user.role == 'Patient': # PATIENT
                 if not user.patient_profile:
                     flash('Please complete your profile before proceeding.', 'info')
                     return redirect(url_for('patient_setup'))
                 flash('Login Successful !', "success")
-                return redirect (url_for('admin.dashboard'))
+                return redirect (url_for('patient.dashboard'))
         else:
             flash('Login Failed. Check email and password', 'danger')
     
@@ -89,7 +89,7 @@ def doctor_setup():
         return redirect(url_for('login'))
     if current_user.doctor_profile:
         flash("You have already completed your profile setup.", "info")
-        return redirect(url_for('admin.dashboard')) 
+        return redirect(url_for('doctor.dashboard')) 
 
     form = DoctorSetupForm()
     
@@ -124,7 +124,7 @@ def doctor_setup():
             db.session.commit()
 
             flash("Doctor profile created successfully!", "success")
-            return redirect(url_for("admin.dashboard"))
+            return redirect(url_for("doctor.dashboard"))
 
         except Exception as e:
             db.session.rollback()

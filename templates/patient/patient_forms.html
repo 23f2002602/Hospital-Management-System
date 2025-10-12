@@ -33,19 +33,15 @@
 {% endblock %}
 
 {% block content %}
-
 <div class="container mt-5 mb-5">
     <div class="row justify-content-center">
-        
         <div class="col-md-8">
-            
             <div class="card shadow-sm">
-                
                 <div class="card-header bg-primary text-white">
                     <h3 class="mb-0">
                         {% if form_type == "edit_appt" %}
                             Edit Your Appointment
-                        {% if form_type == "edit_profile" %}
+                        {% elif form_type == "edit_profile" %}
                             Edit Profile
                         {% else %}
                             Share your feedback
@@ -77,7 +73,6 @@
                             </div>
                         
                         {% elif form_type == "edit_profile" %}
-                            <p class="card-text">Update your personal information below.</p>
                             <p class="card-text">Update your personal information below.</p>
                             <div class="mb-3">
                                 {{ form.name.label(class="form-label fw-bold") }}
@@ -134,7 +129,7 @@
                         <div class="d-grid">
                             <button type="submit" class="btn btn-primary btn-lg">
                                 {% if form_type == 'edit' %}
-                                    Update Appointment
+                                    Update changes
                                 {% else %}
                                     Submit Feedback
                                 {% endif %}
@@ -142,11 +137,8 @@
                         </div>
                     </form>
                 </div>
-
             </div>
-
         </div>
-
     </div>
 </div>
 {% endblock %}

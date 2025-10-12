@@ -10,7 +10,7 @@ patient_bp = Blueprint('patient', __name__)
 @patient_bp.route('/dashboard')
 @login_required
 def dashboard():
-    if current_user.role != 'patient' :
+    if current_user.role != 'Patient' :
         flash("Access denied.", "danger")
         return redirect(url_for('login'))
     
