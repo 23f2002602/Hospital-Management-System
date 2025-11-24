@@ -1,0 +1,153 @@
+{% extends "admin/base.html" %}
+
+{% block title %}
+{% if edit_mode %} Edit {% else %} Doctor Setup {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">
+        {% if edit_mode %} Edit {% else %} Setup {% endif %}
+        {% if entity == 'doctor' %} Doctor {% elif entity == 'patient' %} Patient {% else %} Appointment {% endif %}
+    </h2>
+
+    <form method="POST">
+        {{ form.hidden_tag() }}
+
+<!-- DOCTOR -->
+        {% if entity == 'doctor' %}
+            <!-- Specialization -->
+            <div class="mb-3">
+                {{ form.specialization.label(class="form-label") }}
+                {{ form.specialization(class="form-control" + (" is-invalid" if form.specialization.errors else "")) }}
+                {% for error in form.specialization.errors %}
+                    <div class="invalid-feedback">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Available Days -->
+             <div class="mb-3">
+               {{ form.available_days.label(class="form-label") }}
+               <div class="border p-2 rounded">
+                    {% for subfield in form.available_days %}
+                        <div class="form-check form-check-inline">
+                            {{ subfield(class="form-check-input") }}
+                            {{ subfield.label(class="form-check-label") }}
+                        </div>
+                    {% endfor %}
+               </div>
+                {% for error in form.available_days.errors %}
+                    <div class="invalid-feedback d-block">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Available Slots -->
+            <div class="mb-3">
+             {{ form.available_slots.label(class="form-label") }}
+               <div class="border p-2 rounded d-flex flex-wrap">
+                    {% for subfield in form.available_slots %}
+                       <div class="form-check m-2" style="min-width: 100px;">
+                            {{ subfield(class="form-check-input") }}
+                            {{ subfield.label(class="form-check-label") }}
+                        </div>
+                    {% endfor %}
+               </div>
+                {% for error in form.available_slots.errors %}
+                    <div class="invalid-feedback d-block">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="mb-3">
+                {{ form.submit(class="btn btn-primary") }}
+            </div>
+        
+
+<!-- PATIENT -->
+        {% elif entity == 'patient' %}
+            <!-- Patient Name -->
+            <div class="mb-3">
+                {{ form.name.label(class="form-label") }}
+                {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else "")) }}
+                {% for error in form.name.errors %}
+                    <div class="invalid-feedback">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Patient Phone Number -->
+            <div class="mb-3">
+                {{ form.phone_number.label(class="form-label") }}
+                {{ form.phone_number(class="form-control" + (" is-invalid" if form.phone_number.errors else "")) }}
+                {% for error in form.phone_number.errors %}
+                    <div class="invalid-feedback">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Patient DOB -->
+            <div class="mb-3">
+                {{ form.dob.label(class="form-label") }}
+                {{ form.dob(class="form-control" + (" is-invalid" if form.dob.errors else "")) }}
+                {% for error in form.dob.errors %}
+                    <div class="invalid-feedback">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+<!-- APPOINTMENT -->
+        {% elif entity == 'appointment' %}
+            <div class="mb-3">
+                {{ form.doctor_id.label(class="form-label") }}
+                {{ form.doctor_id(class="form-select" + (" is-invalid" if form.doctor_id.errors else "")) }}
+                {% for error in form.doctor_id.errors %}
+                    <div class="invalid-feedback">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Date -->
+            <div class="mb-3">
+                {{ form.date.label(class="form-label") }}
+                {{ form.date(class="form-control" + (" is-invalid" if form.date.errors else "")) }}
+                {% for error in form.date.errors %}
+                    <div class="invalid-feedback">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Time -->
+            <div class="mb-3">
+                {{ form.time.label(class="form-label") }}
+                {{ form.time(class="form-control" + (" is-invalid" if form.time.errors else "")) }}
+                {% for error in form.time.errors %}
+                    <div class="invalid-feedback">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Problem Description -->
+            <div class="mb-3">
+                {{ form.problem.label(class="form-label") }}
+                {{ form.problem(class="form-control" + (" is-invalid" if form.problem.errors else "")) }}
+                {% for error in form.problem.errors %}
+                    <div class="invalid-feedback">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+        {% endif %}
+
+        <div class="mb-3">
+            {{ form.submit(class="btn btn-primary") }}
+        </div>
+    </form>
+    
+    {% if edit_mode %}
+
+        {% if entity == 'doctor' %}
+            <a href="{{ url_for('admin.view_doctor_detail', doctor_id=doctor.id) }}" class="btn btn-secondary mt-3">Back to Doctor Details</a>
+        {% elif entity == 'patient' %}
+            <a href="{{ url_for('admin.view_patients') }}" class="btn btn-secondary mt-3">Back to Patient Details</a>
+        {% else %}
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary mt-3">Back to Dashboard</a>
+        {% endif %}
+
+    {% else %}
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary mt-3">Back to Dashboard</a>
+    {% endif %}
+</div>
+
+{% endblock %}

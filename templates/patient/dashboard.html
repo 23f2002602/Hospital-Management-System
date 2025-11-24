@@ -1,0 +1,135 @@
+{% extends "patient/patient_base.html" %}
+{% block title %}
+    Patient Dashboard
+{% endblock %}
+
+{% block content %}
+
+<h2 class="mt-4">Welcome, {{ current_user.name }}!</h2>
+
+<div class="card mb-4">
+    <div class="card-header">Your Details</div>
+    <div class="card-body">
+        <p><strong>Phone Number:</strong> {{ patient.phone_number }}</p>
+        <p><strong>Date of Birth:</strong> {{ patient.dob.strftime('%Y-%m-%d') }}</p>
+        <p><strong>Age:</strong> {{ age }}</p>
+    </div>
+</div>
+
+<h2>Upcoming Appointments</h2>
+<div class="table-responsive">
+    <table class="table table-bordered">
+            <thead class="table-dark">
+                    <tr>
+                            <th>Appointment ID</th>
+                            <th>Doctor Name</th>
+                            <th>Problem</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                    </tr>
+            </thead>
+            <tbody>
+                    {% for appt in upcoming_appointments %}
+                    <tr>
+                            <td>{{ appt.id }}</td>
+                            <td>(ID :{{ appt.doctor.id }} Dr. {{ appt.doctor.user.name }} )</td>
+                            <td>{{ appt.problem }}</td>
+                            <td>{{ appt.date.strftime('%d-%b-%Y') }}</td>
+                            <td>{{ appt.time.strftime('%H:%M') }}</td>
+                            <td>
+                                <span class="badge bg-primary">{{ appt.status.value }}</span>
+                            </td>
+                            <td>
+                                <a href="{{ url_for('patient.edit_appt', appointment_id = appt.id) }}" class="btn btn-warning btn-sm">Edit</a>
+                                <form method="POST" action="{{ url_for('patient.cancel_appt', appointment_id=appt.id) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to cancel this appointment?');">
+                                        <button type="submit" class="btn btn-secondary btn-sm">Cancel</button>
+                                </form>
+                                <form method="POST" action="{{ url_for('patient.delete_appointment', appointment_id=appt.id) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to permanently delete this appointment? This action cannot be undone.');">
+                                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                </form>
+                            </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                            <td colspan="7">No Upcoming Appointments Scheduled.</td>
+                    </tr>
+                    {% endfor %}
+            </tbody>
+
+    </table>
+</div>
+
+<h2>Previous Appointment</h2>
+<div class="table-responsive">
+<table class="table table-bordered">
+        <thead class="table-dark">
+                <tr>
+                        <th>Appointment ID</th>
+                        <th>Doctor Name</th>
+                        <th>Problem</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Status</th>
+                        <th>Treatment</th>
+                        <th>Prescription</th>
+                        <th>Rating</th>
+                        <th>Remarks</th>
+                </tr>
+        </thead>
+        <tbody>
+                {% for appt in past_appointments %}
+                <tr>
+                        <td>{{ appt.id }}</td>
+                        <td>{{ appt.doctor.user.name }}</td>
+                        <td>{{ appt.problem }}</td>
+                        <td>{{ appt.date }}</td>
+                        <td>{{ appt.time.strftime('%H:%M') }}</td>
+                        <td>
+                            <span class="badge 
+                                {% if appt.status.value == 'Cancelled' %}bg-danger
+                                {% elif appt.status.value == 'Completed' %}bg-success
+                                {% else %}bg-secondary
+                                {% endif %}">
+                                {{ appt.status.value }}
+                            </span>
+                        </td>
+                        <td>{{ appt.treatment.disease if appt.treatment else 'N/A' }}</td>
+                        <td>{{ appt.treatment.prescription if appt.treatment.prescription else 'N/A'}}</td>
+                        <td>
+                            {% if appt.status.value == 'Completed' %}
+                                {% if appt.rating is none %}
+                                    <a href="{{ url_for('patient.feedback', appointment_id=appt.id) }}" class="btn btn-info btn-sm">Add Feedback</a>
+                                {% else %}
+                                    Rated: {{ appt.rating }}/5
+                                {% endif %}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if appt.status.value == 'Completed' %}
+                                {% if appt.remarks is none %}
+                                    <a href="{{ url_for('patient.feedback', appointment_id=appt.id) }}" class="btn btn-info btn-sm">Add Feedback</a>
+                                {% else %}
+                                    Rated: {{ appt.remarks }}/5
+                                {% endif %}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
+                </tr>
+                </tr>
+                {% else %}
+                <tr>
+                        <td colspan="10">No Previous Appointment.</td>
+                </tr>
+                {% endfor %}
+        </tbody>
+
+</table>
+</div>
+{% endblock %}
+
+

@@ -1,0 +1,87 @@
+{% extends "admin/base.html" %}
+
+{% block title %} 
+        Admin Dashboard
+{% endblock %}
+
+{% block content %}
+
+<h2> Today's Appointments </h2>
+<table class="table table-bordered">
+        <thead>
+                <tr>
+                        <th>Appointment ID</th>
+                        <th>Dcotor ID</th>
+                        <th>Dcotor Name</th>
+                        <th>Patient Name</th>
+                        <th>Problem</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Actions</th>
+                </tr>
+        </thead>
+        <tbody>
+                {% for appt in todays_appointments %}
+                <tr>
+                        <td>{{ appt.id }}</td>
+                        <td>{{ appt.doctor.id }}</td>
+                        <td>{{ appt.doctor.name }}</td>
+                        <td>{{ appt.patient.name }}</td>
+                        <td>{{ appt.problem }}</td>
+                        <td>{{ appt.date }}</td>
+                        <td>{{ appt.time.strftime('%H:%M') }}</td>
+                        <td>
+                        <form method="POST" action="{{ url_for('admin.delete_appointment', appointment_id=appt.id) }}" class="d-inline">
+                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                        </form>
+                        <a href="{{ url_for('admin.edit_appt', appointment_id = appt.id) }}" class="btn btn-warning btn-sm">Edit</a>      
+                        </td>
+                </tr>
+                {% else %}
+                <tr>
+                        <td colspan="7">No Appointments Scheduled Today.</td>
+                </tr>
+                {% endfor %}
+        </tbody>
+</table>
+
+<h2>Future Appointments</h2>
+<table class="table table-bordered">
+        <thead>
+                <tr>
+                        <th>Appointment ID</th>
+                        <th>Dcotor ID</th>
+                        <th>Dcotor Name</th>
+                        <th>Patient Name</th>
+                        <th>Problem</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Actions</th>
+                </tr>
+        </thead>
+        <tbody>
+                {% for appt in future_appointments %}
+                <tr>
+                        <td>{{ appt.id }}</td>
+                        <td>{{ appt.doctor.id }}</td>
+                        <td>{{ appt.doctor.user.name }}</td>
+                        <td>{{ appt.patient.user.name }}</td>
+                        <td>{{ appt.problem }}</td>
+                        <td>{{ appt.date }}</td>
+                        <td>{{ appt.time.strftime('%H:%M') }}</td>
+                        <td>
+                        <form method="POST" action="{{ url_for('admin.delete_appointment', appointment_id=appt.id) }}" class="d-inline">
+                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                        </form>
+                        <a href="{{ url_for('admin.edit_appt', appointment_id = appt.id) }}" class="btn btn-warning btn-sm">Edit</a>    
+                        </td>
+                </tr>
+                {% else %}
+                <tr>
+                        <td colspan="7">No Future Appointments Scheduled.</td>
+                </tr>
+                {% endfor %}
+        </tbody>
+
+</table>
+{% endblock %}

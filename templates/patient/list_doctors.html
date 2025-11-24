@@ -1,0 +1,33 @@
+{% extends "patient/patient_base.html" %}
+
+{% block title %} 
+    Doctors List
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <h2 class="mb-4">Our Doctors</h2>
+    <div class="row">
+        {% for doctor in doctors %}
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Dr. {{ doctor.user.name }}</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Specialization:</strong> {{ doctor.specialization }}</p>
+                    
+                    {% if availability_by_doctor[doctor.id] %}
+                        <h6>Availability:</h6>
+                        <p><strong>Days:</strong> {{ ", ".join(availability_by_doctor[doctor.id]['days']) }}</p>
+                        <p><strong>Slots:</strong> {{ ", ".join(availability_by_doctor[doctor.id]['slots']) }}</p>
+                    {% else %}
+                        <p class="text-muted">Availability not set for this doctor.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

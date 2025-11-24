@@ -1,0 +1,58 @@
+{% extends "admin/base.html" %}
+
+{% block title %}
+    All Appointments
+{% endblock %}
+
+{% block content %}
+
+<h3 class="mt-4">Appointments</h3>
+<br>
+<table class="table table-bordered table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>Appointment ID</th>
+            <th>Patient Name</th>
+            <th>Doctor Name</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Problem</th>
+            <th>Disease</th>
+            <th>Status</th>
+            <th>Treatment</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% if appointments %}
+            {% for appt in appointments %}
+                <tr>
+                    <td>{{ appt.id }}</td>
+                    <td>{{ appt.patient.user.name }}</td>
+                    <td>Dr. {{ appt.doctor.user.name }}</td>
+                    <td>{{ appt.date.strftime('%Y-%m-%d') }}</td>
+                    <td>{{ appt.time.strftime('%H:%M') }}</td>
+                    <td>{{ appt.problem or 'N/A' }}</td>
+                    <td>{{ appt.treatment.disease if appt.treatment else 'N/A' }}</td>
+                    <td>
+                        <span class="badge 
+                            {% if appt.status.value == 'Cancelled' %}bg-danger
+                            {% elif appt.status.value == 'Completed' %}bg-success
+                            {% else %}bg-primary
+                            {% endif %}">
+                            {{ appt.status.value }}
+                        </span>
+                    </td>
+                    <td>{{ appt.treatment if appt.treatment else 'N/A' }}</td>
+                </tr>
+            {% endfor %}
+        {% else %}
+            <tr>
+                <td colspan="9" class="text-center">No appointments found.</td>
+            </tr>
+        {% endif %}
+    </tbody>
+</table>
+<div class="text-center mt-4">
+    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+</div>
+{% endblock %}

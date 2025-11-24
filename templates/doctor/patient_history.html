@@ -1,0 +1,48 @@
+{% extends "doctor/doctor_base.html" %}
+{% block title %}Patient History{% endblock %}
+
+{% block content %}
+<h2 class="mt-4">History for {{ patient.user.name }}</h2>
+<p><strong>Date of Birth:</strong> {{ patient.dob.strftime('%Y-%m-%d') }}</p>
+<p><strong>Phone Number:</strong> {{ patient.phone_number }}</p>
+
+<h3 class="mt-4">Appointments History</h3>
+<div class="table-responsive">
+    <table class="table table-bordered">
+        <thead class="table-dark">
+            <tr>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Status</th>
+                <th>Problem</th>
+                <th>Diagnosis</th>
+                <th>Prescription</th>
+                <th>Notes</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for appt in appointments %}
+            <tr>
+                <td>{{ appt.date.strftime('%d-%b-%Y') }}</td>
+                <td>{{ appt.time.strftime('%H:%M') }}</td>
+                <td>
+                    <span class="badge {% if appt.status.value == 'Completed' %}bg-success{% else %}bg-secondary{% endif %}">
+                        {{ appt.status.value }}
+                    </span>
+                </td>
+                <td>{{ appt.problem }}</td>
+                <td>{{ appt.treatment.diagnosis if appt.treatment else 'N/A' }}</td>
+                <td>{{ appt.treatment.prescription if appt.treatment else 'N/A' }}</td>
+                <td>{{ appt.treatment.notes if appt.treatment else 'N/A' }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="7">No history found for this patient with you.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<a href="{{ url_for('doctor.dashboard') }}" class="btn btn-secondary mt-3">Back to Dashboard</a>
+{% endblock %}

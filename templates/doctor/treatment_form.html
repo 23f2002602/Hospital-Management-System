@@ -1,0 +1,44 @@
+{% extends "doctor/doctor_base.html" %}
+{% block title %}Add Treatment{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Add Treatment Details</h3>
+                </div>
+                <div class="card-body">
+                    <p><strong>Patient:</strong> {{ appointment.patient.user.name }}</p>
+                    <p><strong>Date:</strong> {{ appointment.date.strftime('%d-%b-%Y') }}</p>
+                    <p><strong>Problem:</strong> {{ appointment.problem }}</p>
+                    
+                    <form method="POST" action="" novalidate>
+                        {{ form.csrf_token }}
+
+                        <div class="mb-3">
+                            {{ form.diagnosis.label(class="form-label fw-bold") }}
+                            {{ form.diagnosis(class="form-control", rows=4) }}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.prescription.label(class="form-label fw-bold") }}
+                            {{ form.prescription(class="form-control", rows=4) }}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.notes.label(class="form-label fw-bold") }}
+                            {{ form.notes(class="form-control", rows=3) }}
+                        </div>
+
+                        <div class="d-grid">
+                           {{ form.submit(class="btn btn-primary btn-lg") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

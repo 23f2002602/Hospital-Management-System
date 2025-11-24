@@ -1,0 +1,76 @@
+/* Dark theme overrides and accent colors */
+:root{
+  --accent: #6c5ce7; /* purple accent */
+  --muted: #6b7280;
+  --card-bg: #0f1724; /* slightly lighter than bg */
+  --surface: #0b1220;
+}
+
+body[data-bs-theme="dark"], body{
+  background-color: #05060a;
+  color: #e6eef8;
+}
+
+.navbar, .navbar .navbar-brand, .navbar .nav-link{
+  background-color: #071124 !important;
+}
+
+.navbar .nav-link{
+  color: #cbd5e1 !important;
+}
+
+.btn-primary{
+  background-color: var(--accent) !important;
+  border-color: var(--accent) !important;
+}
+
+.btn-outline-primary{
+  color: var(--accent) !important;
+  border-color: rgba(108,92,231,0.35) !important;
+}
+
+.card{
+  background-color: var(--card-bg);
+  border: 1px solid rgba(255,255,255,0.03);
+}
+
+.table thead.table-dark th{
+  background-color: rgba(255,255,255,0.04) !important;
+  color: #e6eef8;
+}
+
+.table tbody tr td{
+  vertical-align: middle;
+}
+
+.form-control, .form-select{
+  background-color: #071124;
+  color: #e6eef8;
+  border: 1px solid rgba(255,255,255,0.04);
+}
+
+.form-control:focus, .form-select:focus{
+  box-shadow: 0 0 0 0.2rem rgba(108,92,231,0.15);
+}
+
+.alert{
+  background-color: #091424;
+  color: #e6eef8;
+  border: 1px solid rgba(255,255,255,0.03);
+}
+
+.badge.bg-success{ background-color: #10b981; }
+.badge.bg-danger{ background-color: #ef4444; }
+.badge.bg-secondary{ background-color: #6b7280; }
+
+/* Small utility */
+.text-muted { color: var(--muted) !important; }
+
+/* Make checkboxes more visible */
+.form-check-input{
+  background-color: transparent;
+  border-color: rgba(255,255,255,0.15);
+}
+
+/* Footer spacing */
+footer{ margin-top: 3rem; color: var(--muted); }
