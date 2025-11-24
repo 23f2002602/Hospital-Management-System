@@ -55,8 +55,6 @@ class DoctorSetupForm(FlaskForm):
     )
     submit = SubmitField('Save Profile')
 
-<<<<<<< HEAD
-
 class DoctorProfileForm(FlaskForm):
     specialization = StringField('Specialization', validators=[DataRequired()])
     submit = SubmitField('Update Profile')
@@ -73,8 +71,6 @@ class DailySlotForm(FlaskForm):
         ], option_widget=widgets.CheckboxInput(), widget=widgets.ListWidget(prefix_label=False))
     submit = SubmitField('Save Slots')
 
-=======
->>>>>>> 4238e7dbfe0a2d9cd0e5c96778c3d0e9a164a6ac
 class AppointmentForm(FlaskForm):
     doctor_id = SelectField('Doctor', coerce=int, validators=[DataRequired()])
     date = DateField('Date', validators=[DataRequired()])

@@ -1,9 +1,5 @@
 <!DOCTYPE html>
-<<<<<<< HEAD
 <html lang="en" data-bs-theme="dark">
-=======
-<html lang="en">
->>>>>>> 4238e7dbfe0a2d9cd0e5c96778c3d0e9a164a6ac
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,25 +9,16 @@
         {% endblock %}
     </title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<<<<<<< HEAD
     <link href="{{ url_for('static', filename='css/theme.css') }}" rel="stylesheet">
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
-=======
-</head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
->>>>>>> 4238e7dbfe0a2d9cd0e5c96778c3d0e9a164a6ac
         <div class="container-fluid">
             <a class="navbar-brand" href="{{ url_for('doctor.dashboard') }}">Doctor Panel</a>
             <ul class="navbar-nav me-auto">
                 <li class="nav-item"><a class="nav-link" href="{{ url_for('doctor.dashboard') }}">Dashboard</a></li>
-<<<<<<< HEAD
                 <li class="nav-item"><a class="nav-link" href="{{ url_for('doctor.edit_profile') }}">Edit Profile</a></li>
                 <li class="nav-item"><a class="nav-link" href="{{ url_for('doctor.manage_slots') }}">Manage Slots</a></li>
-=======
->>>>>>> 4238e7dbfe0a2d9cd0e5c96778c3d0e9a164a6ac
                 <li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}">Logout</a></li>
             </ul>
             <form class="d-flex" method="GET" action="{{ url_for('doctor.dashboard') }}">
