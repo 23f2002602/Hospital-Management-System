@@ -36,6 +36,7 @@ class DoctorAvailability(db.Model):
     # Ensures a doctor can't have overlapping slots on the same day
     __table_args__ = (db.UniqueConstraint('doctor_id', 'day', 'start_time', name='_doctor_day_start_uc'),)
 
+<<<<<<< HEAD
 
 class DoctorAvailabilityOverride(db.Model):
     """
@@ -53,6 +54,8 @@ class DoctorAvailabilityOverride(db.Model):
 
     __table_args__ = (db.UniqueConstraint('doctor_id', 'date', 'start_time', name='_doctor_date_start_uc'),)
 
+=======
+>>>>>>> 4238e7dbfe0a2d9cd0e5c96778c3d0e9a164a6ac
 class Doctor(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, unique=True)

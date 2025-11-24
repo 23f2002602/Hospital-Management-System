@@ -21,8 +21,12 @@ def dashboard():
 
     future_appointments = Appointment.query.filter(
         Appointment.patient_id == patient.id,
+<<<<<<< HEAD
         Appointment.date >= today,
         Appointment.status == AppointmentStatus.BOOKED
+=======
+        Appointment.date >= today
+>>>>>>> 4238e7dbfe0a2d9cd0e5c96778c3d0e9a164a6ac
         ).order_by(Appointment.date, Appointment.time).all()
     
     past_appointments = Appointment.query.filter(
@@ -82,6 +86,7 @@ def edit_appt(appointment_id):
     
     form = AppointmentForm()
     doctors = Doctor.query.join(User).all()
+<<<<<<< HEAD
     form.doctor_id.choices = [(doc.id, f"Dr. {doc.user.name} - {doc.specialization}") for doc in doctors]
     
     # Populate available slots based on selected doctor and date
@@ -201,6 +206,15 @@ def edit_appt(appointment_id):
         appt.doctor_id = form.doctor_id.data
         appt.date = form.date.data
         appt.time = appointment_time
+=======
+
+    form.doctor_id.choices = [(doc.id, f"Dr. {doc.user.name} - {doc.specialization}") for doc in doctors]
+    
+    if form.validate_on_submit():
+        appt.doctor_id = form.doctor_id.data
+        appt.date = form.date.data
+        appt.time = form.time.data
+>>>>>>> 4238e7dbfe0a2d9cd0e5c96778c3d0e9a164a6ac
         appt.problem = form.problem.data
 
         db.session.commit()
@@ -212,6 +226,7 @@ def edit_appt(appointment_id):
         form.date.data = appt.date
         form.time.data = appt.time.strftime('%H:%M')
         form.problem.data = appt.problem
+<<<<<<< HEAD
         
         # Load slots for the current appointment
         if appt.doctor_id and appt.date:
@@ -221,6 +236,8 @@ def edit_appt(appointment_id):
                 available_slots.append(current_time_str)
             if available_slots:
                 form.time.choices = [(slot, slot) for slot in sorted(available_slots)]
+=======
+>>>>>>> 4238e7dbfe0a2d9cd0e5c96778c3d0e9a164a6ac
 
     return render_template('patient/patient_forms.html', form=form, appointment=appt, form_type='edit_appt')
 
@@ -231,6 +248,7 @@ def delete_appointment(appointment_id):
 
     if appt.patient_id != current_user.patient_profile.id:
         abort(403)
+<<<<<<< HEAD
     
     # Only allow deleting upcoming appointments (not past appointments)
     if appt.date < date.today():
@@ -241,6 +259,8 @@ def delete_appointment(appointment_id):
     if appt.status != AppointmentStatus.BOOKED:
         flash(f'Cannot delete appointment with status {appt.status.value}.', 'warning')
         return redirect(url_for('patient.dashboard'))
+=======
+>>>>>>> 4238e7dbfe0a2d9cd0e5c96778c3d0e9a164a6ac
 
     db.session.delete(appt)
     db.session.commit()
@@ -301,6 +321,7 @@ def feedback(appointment_id):
 @patient_bp.route('/appointment/book', methods=['GET', 'POST'])
 @login_required
 def book_appt():
+<<<<<<< HEAD
     # Check if user is a patient
     if current_user.role != 'Patient':
         flash("Access denied.", "danger")
@@ -444,6 +465,16 @@ def book_appt():
             flash('Patient profile not found. Please contact administrator.', 'danger')
             return redirect(url_for('patient.dashboard'))
         
+=======
+    form = AppointmentForm()
+
+    doctors = Doctor.query.join(User).all()
+    form.doctor_id.choices = [(doc.id, f"Dr. {doc.user.name} - {doc.specialization}") for doc in doctors]
+
+    if form.validate_on_submit():
+        appointment_time = datetime.strptime(form.time.data, '%H:%M').time()
+
+>>>>>>> 4238e7dbfe0a2d9cd0e5c96778c3d0e9a164a6ac
         new_appointment = Appointment(
             patient_id = current_user.patient_profile.id,
             doctor_id = form.doctor_id.data,
@@ -453,6 +484,7 @@ def book_appt():
             status = AppointmentStatus.BOOKED
         )
 
+<<<<<<< HEAD
         try:
             db.session.add(new_appointment)
             db.session.commit()
@@ -500,6 +532,15 @@ def get_available_slots(doctor_id, selected_date):
         return available_times
     except (ValueError, KeyError):
         return []
+=======
+        db.session.add(new_appointment)
+        db.session.commit()
+
+        flash('Appointment booked successfully.', 'success')
+        return redirect(url_for('patient.dashboard'))
+    
+    return render_template('patient/Appt_booking.html', form=form)
+>>>>>>> 4238e7dbfe0a2d9cd0e5c96778c3d0e9a164a6ac
 
 @patient_bp.route('/doctors')
 @login_required
@@ -523,12 +564,16 @@ def get_slots(doctor_id, date_str):
         selected_date = datetime.strptime(date_str, '%Y-%m-%d').date()
         day_of_week = selected_date.strftime('%A').upper()
 
+<<<<<<< HEAD
         # Get all available slots for the doctor on this day of week
+=======
+>>>>>>> 4238e7dbfe0a2d9cd0e5c96778c3d0e9a164a6ac
         available_slots = DoctorAvailability.query.filter_by(
             doctor_id=doctor_id,
             day=DayOfWeek[day_of_week]
         ).all()
 
+<<<<<<< HEAD
         # Get all already booked appointments for this doctor on this date
         booked_appointments = Appointment.query.filter_by(
             doctor_id=doctor_id,
@@ -549,4 +594,10 @@ def get_slots(doctor_id, date_str):
         return jsonify(available_times)
 
     except (ValueError, KeyError) as e:
+=======
+        slots = [slot.start_time.strftime('%H:%M') for slot in available_slots]
+        return jsonify(slots)
+
+    except (ValueError, KeyError):
+>>>>>>> 4238e7dbfe0a2d9cd0e5c96778c3d0e9a164a6ac
         return jsonify([])

@@ -1,9 +1,14 @@
 from routes.routes import *
 from models import *
+<<<<<<< HEAD
 from forms import TreatmentForm, DoctorProfileForm, DailySlotForm
 from datetime import date
 from datetime import datetime, timedelta
 from collections import defaultdict
+=======
+from forms import TreatmentForm
+from datetime import date
+>>>>>>> 4238e7dbfe0a2d9cd0e5c96778c3d0e9a164a6ac
 
 doctor_bp = Blueprint('doctor', __name__)
 
@@ -15,12 +20,15 @@ def dashboard():
         return redirect(url_for('login'))
 
     doctor = current_user.doctor_profile
+<<<<<<< HEAD
     # allow selecting a date via query param ?date=YYYY-MM-DD
     qdate = request.args.get('date')
     try:
         selected_date = datetime.strptime(qdate, '%Y-%m-%d').date() if qdate else date.today()
     except Exception:
         selected_date = date.today()
+=======
+>>>>>>> 4238e7dbfe0a2d9cd0e5c96778c3d0e9a164a6ac
     today = date.today()
 
     upcoming_appointments = Appointment.query.filter(
@@ -34,6 +42,7 @@ def dashboard():
         Appointment.status == AppointmentStatus.COMPLETED
     ).order_by(Appointment.date.desc(), Appointment.time.desc()).all()
 
+<<<<<<< HEAD
     # Build per-day slot view for the selected date (shows booked/free)
     slots_display = []
     day_enum = get_weekday_enum_for_date(selected_date)
@@ -55,11 +64,14 @@ def dashboard():
             slots_display.append({'time': label, 'is_weekly': False, 'override': o, 'is_available': o.is_available, 'is_booked': is_booked})
     slots_display.sort(key=lambda x: datetime.strptime(x['time'], '%H:%M').time())
 
+=======
+>>>>>>> 4238e7dbfe0a2d9cd0e5c96778c3d0e9a164a6ac
     return render_template(
         'doctor/dashboard.html', 
         doctor=doctor, 
         upcoming_appointments=upcoming_appointments,
         completed_appointments=completed_appointments
+<<<<<<< HEAD
         , selected_date=selected_date, slots_display=slots_display
     )
 
@@ -192,6 +204,10 @@ def manage_slots():
 
     return render_template('doctor/manage_slots.html', form=form, slots=slots_display, selected_date=selected_date)
 
+=======
+    )
+
+>>>>>>> 4238e7dbfe0a2d9cd0e5c96778c3d0e9a164a6ac
 @doctor_bp.route('/patient/<int:patient_id>/history')
 @login_required
 def patient_history(patient_id):

@@ -5,6 +5,7 @@
 {% endblock %}
 
 {% block content %}
+<<<<<<< HEAD
 <div class="container mt-4 mb-5">
     <div class="row justify-content-center">
         <div class="col-lg-10 col-xl-8">
@@ -27,10 +28,22 @@
                         </svg>
                         Please fill out the details below to schedule your appointment. After selecting a doctor and date, click "Load Available Slots" to see available time slots.
                     </p>
+=======
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">{{ title }}</h3>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Please fill out the details below to schedule your visit.</p>
+>>>>>>> 4238e7dbfe0a2d9cd0e5c96778c3d0e9a164a6ac
                     
                     <form method="POST" action="" novalidate>
                         {{ form.csrf_token }}
 
+<<<<<<< HEAD
                         <!-- Doctor Selection -->
                         <div class="mb-4">
                             <label class="form-label fw-bold mb-2">
@@ -153,6 +166,42 @@
                         <!-- Submit Button -->
                         <div class="d-grid gap-2">
                            {{ form.submit(class="btn btn-primary btn-lg fw-bold py-3") }}
+=======
+                        <div class="mb-3">
+                            {{ form.doctor_id.label(class="form-label fw-bold") }}
+                            {{ form.doctor_id(class="form-select", id="doctor-select") }}
+                            {% for error in form.doctor_id.errors %}
+                                <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.date.label(class="form-label fw-bold") }}
+                            {{ form.date(class="form-control", id="date-select") }}
+                            {% for error in form.date.errors %}
+                                <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.time.label(class="form-label fw-bold") }}
+                            {{ form.time(class="form-select", id="time-select") }}
+                            {% for error in form.time.errors %}
+                                <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mb-4">
+                            {{ form.problem.label(class="form-label fw-bold") }}
+                            {{ form.problem(class="form-control", placeholder="e.g., Annual check-up, flu symptoms...") }}
+                            {% for error in form.problem.errors %}
+                                <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="d-grid">
+                           {{ form.submit(class="btn btn-primary btn-lg") }}
+>>>>>>> 4238e7dbfe0a2d9cd0e5c96778c3d0e9a164a6ac
                         </div>
                     </form>
                 </div>
@@ -160,4 +209,43 @@
         </div>
     </div>
 </div>
+<<<<<<< HEAD
+=======
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const doctorSelect = document.getElementById('doctor-select');
+        const dateSelect = document.getElementById('date-select');
+        const timeSelect = document.getElementById('time-select');
+
+        function fetchSlots() {
+            const doctorId = doctorSelect.value;
+            const selectedDate = dateSelect.value;
+
+            if (doctorId && selectedDate) {
+                fetch(`/patient/get-slots/${doctorId}/${selectedDate}`)
+                    .then(response => response.json())
+                    .then(slots => {
+                        timeSelect.innerHTML = ''; 
+                        if (slots.length > 0) {
+                            slots.forEach(slot => {
+                                const option = document.createElement('option');
+                                option.value = slot;
+                                option.textContent = slot;
+                                timeSelect.appendChild(option);
+                            });
+                        } else {
+                            const option = document.createElement('option');
+                            option.textContent = 'No available slots';
+                            timeSelect.appendChild(option);
+                        }
+                    });
+            }
+        }
+
+        doctorSelect.addEventListener('change', fetchSlots);
+        dateSelect.addEventListener('change', fetchSlots);
+    });
+</script>
+>>>>>>> 4238e7dbfe0a2d9cd0e5c96778c3d0e9a164a6ac
 {% endblock %}

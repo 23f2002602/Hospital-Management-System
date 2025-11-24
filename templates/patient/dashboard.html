@@ -31,7 +31,11 @@
                     </tr>
             </thead>
             <tbody>
+<<<<<<< HEAD
                     {% for appt in upcoming_appointments %}
+=======
+                    {% for appt in future_appointments %}
+>>>>>>> 4238e7dbfe0a2d9cd0e5c96778c3d0e9a164a6ac
                     <tr>
                             <td>{{ appt.id }}</td>
                             <td>(ID :{{ appt.doctor.id }} Dr. {{ appt.doctor.user.name }} )</td>
@@ -42,6 +46,7 @@
                                 <span class="badge bg-primary">{{ appt.status.value }}</span>
                             </td>
                             <td>
+<<<<<<< HEAD
                                 <a href="{{ url_for('patient.edit_appt', appointment_id = appt.id) }}" class="btn btn-warning btn-sm">Edit</a>
                                 <form method="POST" action="{{ url_for('patient.cancel_appt', appointment_id=appt.id) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to cancel this appointment?');">
                                         <button type="submit" class="btn btn-secondary btn-sm">Cancel</button>
@@ -49,6 +54,12 @@
                                 <form method="POST" action="{{ url_for('patient.delete_appointment', appointment_id=appt.id) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to permanently delete this appointment? This action cannot be undone.');">
                                         <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                                 </form>
+=======
+                                <form method="POST" action="{{ url_for('patient.cancel_appt', appointment_id=appt.id) }}" style="display:inline;" onsubmit="return confirm('Are you sure you want to cancel this appointment?');">
+                                        <button type="submit" class="btn btn-danger btn-sm">Cancel</button>
+                                </form>
+                                <a href="{{ url_for('patient.edit_appt', appointment_id = appt.id) }}" class="btn btn-warning btn-sm">Edit</a>    
+>>>>>>> 4238e7dbfe0a2d9cd0e5c96778c3d0e9a164a6ac
                             </td>
                     </tr>
                     {% else %}

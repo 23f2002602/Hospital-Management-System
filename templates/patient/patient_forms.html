@@ -58,13 +58,17 @@
                             <div class="mb-3">
                                 {{ form.doctor_id.label(class="form-label fw-bold") }}
                                 {{ form.doctor_id(class="form-select") }}
+<<<<<<< HEAD
                                 {% for error in form.doctor_id.errors %}
                                     <div class="text-danger small mt-1">{{ error }}</div>
                                 {% endfor %}
+=======
+>>>>>>> 4238e7dbfe0a2d9cd0e5c96778c3d0e9a164a6ac
                             </div>
                              <div class="mb-3">
                                 {{ form.date.label(class="form-label fw-bold") }}
                                 {{ form.date(class="form-control") }}
+<<<<<<< HEAD
                                 {% for error in form.date.errors %}
                                     <div class="text-danger small mt-1">{{ error }}</div>
                                 {% endfor %}
@@ -72,23 +76,31 @@
                             <div class="mb-3">
                                 <button type="submit" name="load_slots" value="1" class="btn btn-secondary btn-sm mb-2">Load Available Slots</button>
                                 <small class="form-text text-muted d-block">After selecting a doctor and date, click this button to load and view available time slots for your selected date.</small>
+=======
+>>>>>>> 4238e7dbfe0a2d9cd0e5c96778c3d0e9a164a6ac
                             </div>
                             <div class="mb-3">
                                 {{ form.time.label(class="form-label fw-bold") }}
                                 {{ form.time(class="form-select") }}
+<<<<<<< HEAD
                                 {% for error in form.time.errors %}
                                     <div class="text-danger small mt-1">{{ error }}</div>
                                 {% endfor %}
                                 {% if form.time.choices|length > 0 and form.time.choices[0][0] != '' %}
                                     <small class="form-text text-success">Available time slots loaded. Please select a time.</small>
                                 {% endif %}
+=======
+>>>>>>> 4238e7dbfe0a2d9cd0e5c96778c3d0e9a164a6ac
                             </div>
                             <div class="mb-4">
                                 {{ form.problem.label(class="form-label fw-bold") }}
                                 {{ form.problem(class="form-control", rows=4) }}
+<<<<<<< HEAD
                                 {% for error in form.problem.errors %}
                                     <div class="text-danger small mt-1">{{ error }}</div>
                                 {% endfor %}
+=======
+>>>>>>> 4238e7dbfe0a2d9cd0e5c96778c3d0e9a164a6ac
                             </div>
                         
                         {% elif form_type == "edit_profile" %}
@@ -146,11 +158,17 @@
                             </div>
                         {% endif %}
                         <div class="d-grid">
+<<<<<<< HEAD
                             <button type="submit" name="submit_form" class="btn btn-primary btn-lg">
                                 {% if form_type == 'edit_appt' %}
                                     Update Appointment
                                 {% elif form_type == 'edit_profile' %}
                                     Update Profile
+=======
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                {% if form_type == 'edit' %}
+                                    Update changes
+>>>>>>> 4238e7dbfe0a2d9cd0e5c96778c3d0e9a164a6ac
                                 {% else %}
                                     Submit Feedback
                                 {% endif %}
