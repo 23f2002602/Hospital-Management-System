@@ -7,80 +7,111 @@
 {% block content %}
 
 <div class="container mt-4">
-    <h2 class="mb-4">
-        {% if doctor.user.name.startswith("Dr.") %}
-            {{ doctor.user.name }}
-        {% else %}
-            Dr. {{ doctor.user.name }}
-        {% endif %}
-    </h2>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+            {% if doctor.user.name.startswith("Dr.") %}
+                {{ doctor.user.name }}
+            {% else %}
+                Dr. {{ doctor.user.name }}
+            {% endif %}
+        </h2>
+        <a href="{{ url_for('admin.view_doctors') }}" class="btn btn-outline-secondary btn-sm">Back to Doctors List</a>
+    </div>
 
-    <p><strong>Specialization:</strong> {{ doctor.specialization }}</p>
-    {% if availability_schedule %}
-+       <p><strong>Weekly Availability:</strong></p>
-+       <ul class="list-group">
-+           {% for day, slots in availability_schedule.items()|sort %}
-+               <li class="list-group-item">
-+                   <strong>{{ day }}:</strong> {{ ", ".join(slots) }}
-+               </li>
-+           {% endfor %}
-+       </ul>
-+   {% else %}
-+       <p class="text-muted">No availability has been set for this doctor.</p>
-+   {% endif %}
+    <div class="card mb-4 shadow-sm border-0">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Doctor Information</h5>
+        </div>
+        <div class="card-body bg-dark text-light"> <p class="fs-5"><strong>Specialization:</strong> {{ doctor.specialization }}</p>
+            
+            <hr class="border-secondary">
+            
+            <h5 class="mt-3 mb-3 text-info">Weekly Availability</h5>
+            {% if availability_schedule %}
+                <div class="row g-3">
+                    {% for day, slots in availability_schedule.items()|sort %}
+                        <div class="col-md-6 col-lg-4">
+                            <div class="p-3 border border-secondary rounded bg-opacity-10 bg-white">
+                                <strong class="d-block text-primary mb-1">{{ day }}</strong>
+                                <small class="text-light">{{ ", ".join(slots) }}</small>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-muted fst-italic">No availability has been set for this doctor.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row mb-4 g-3">
+        <div class="col-md-4">
+            <div class="p-3 bg-primary bg-opacity-25 border border-primary rounded text-center">
+                <h5 class="mb-0">Today: <strong>{{ today_count }}</strong></h5>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-3 bg-success bg-opacity-25 border border-success rounded text-center">
+                <h5 class="mb-0">Completed: <strong>{{ completed_count }}</strong></h5>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-3 bg-warning bg-opacity-25 border border-warning rounded text-center">
+                <h5 class="mb-0">Pending: <strong>{{ pending_count }}</strong></h5>
+            </div>
+        </div>
+    </div>
+
+    <h3 class="mb-3">Appointments History</h3>
+
+    <div class="table-responsive rounded shadow-sm">
+        <table class="table table-bordered table-striped table-hover mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Patient Name</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Problem</th>
+                    <th>Status</th>
+                    <th style="width: 150px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if appointments %}
+                    {% for appt in appointments|sort(attribute='date')|sort(attribute='time') %}
+                    <tr class="align-middle {% if appt.date == date.today() %}table-info text-dark{% endif %}">
+                        <td>{{ appt.id }}</td>
+                        <td>{{ appt.patient.user.name }}</td>
+                        <td>{{ appt.date.strftime('%d-%b-%Y') }}</td>
+                        <td>{{ appt.time.strftime('%H:%M') }}</td>
+                        <td>{{ appt.problem }}</td>
+                        <td>
+                            <span class="badge {% if appt.status.value == 'Completed' %}bg-success{% elif appt.status.value == 'Cancelled' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                {{ appt.status.value }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('admin.edit_appt', appointment_id=appt.id) }}" class="btn btn-warning btn-sm">Edit</a>
+                            
+                            <form method="POST" action="{{ url_for('admin.delete_appointment', appointment_id=appt.id) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this appointment? This cannot be undone.');">
+                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">No appointments found for this doctor.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mt-4 mb-5 text-center">
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary px-4">Back to Dashboard</a>
+    </div>
 </div>
 
-<h3 class="mt-4">
-    Appointments Summary
-    <span class="badge bg-primary">Today: {{ today_count }}</span>
-    <span class="badge bg-success">Completed: {{ completed_count }}</span>
-    <span class="badge bg-warning text-dark">Pending: {{ pending_count }}</span>
-</h3>
-
-<h3 class="mt-4">Appointments</h3>
-
-<table class="table table-bordered table-striped">
-    <thead class="table-dark">
-        <tr>
-            <th>Appointment ID</th>
-            <th>Patient Name</th>
-            <th>Date</th>
-            <th>Time</th>
-            <th>Problem</th>
-            <th>Status</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% if appointments %}
-        {% for appt in appointments|sort(attribute='date')|sort(attribute='time') %}
-        <tr class="{% if appt.date == date.today() %}table-info{% endif %}">
-            <td>{{ appt.id }}</td>
-            <td>{{ appt.patient.user.name }}</td>
-            <td>{{ appt.date }}</td>
-            <td>{{ appt.time.strftime('%H:%M') }}</td>
-            <td>{{ appt.problem }}</td>
-            <td>{{ appt.status.value }}</td>
-            <td>
-                <form method="POST" action="{{ url_for('admin.delete_appointment', appointment_id=appt.id) }}" class="d-inline">
-                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this appointment?');">Delete</button>
-                </form>
-                <a href="#" class="btn btn-warning btn-sm">Edit</a>
-            </td>
-        </tr>
-        {% endfor %}
-        {% else %}
-        <tr>
-            <td colspan="7" class="text-center">No appointments found </td>
-        </tr>
-        {% endif %}
-    </tbody>
-</table>
-
-<div class="text-center mt-4">
-    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
-</div>
-<div class="text-center mt-4">
-<a href="{{ url_for('admin.view_doctors') }}" class="btn btn-secondary mt-3">Back to Doctors List</a>
-</div>
 {% endblock %}

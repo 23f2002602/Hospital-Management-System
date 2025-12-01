@@ -46,9 +46,21 @@ def delete_appointment(appointment_id):
         return redirect(url_for('login'))
     
     appt = Appointment.query.get_or_404(appointment_id)
+    
+    # Delete associated treatment first to avoid IntegrityError
+    if appt.treatment:
+        db.session.delete(appt.treatment)
+
     db.session.delete(appt)
     db.session.commit()
+    
+    # [FIX] Redirect back to the source page if 'next' is present
+    next_page = request.args.get('next')
     flash('Appointment deleted successfully', 'success')
+    
+    if next_page:
+        return redirect(next_page)
+        
     return redirect(url_for('admin.dashboard'))
 
 @admin_bp.route('/appointment/<int:appointment_id>', methods=['GET', 'POST'])
@@ -61,14 +73,13 @@ def edit_appt(appointment_id):
     appt = Appointment.query.get_or_404(appointment_id)
     form = AppointmentForm(obj=appt)
 
-    # Populate doctor choices immediately (Required for validation)
+    # Populate doctor choices
     all_doctors = Doctor.query.join(User).all()
     form.doctor_id.choices = [
         (d.id, f"Dr. {d.user.name} ({d.specialization})") for d in all_doctors
     ]
 
-    # Handle Time Choices for Validation
-    # Determine which doctor and date to use (Form data takes precedence on POST)
+    # Handle Time Choices
     target_doctor_id = appt.doctor_id
     target_date = appt.date
 
@@ -81,7 +92,6 @@ def edit_appt(appointment_id):
         except ValueError:
             pass
 
-    # Fetch available slots for the target doctor/date
     available_slots = []
     if target_doctor_id and target_date:
         day_enum = DayOfWeek[target_date.strftime('%A').upper()]
@@ -93,7 +103,6 @@ def edit_appt(appointment_id):
 
     form.time.choices = available_slots
 
-    # Ensure the current appointment time is in choices so validation doesn't fail on existing data
     current_time_str = appt.time.strftime('%H:%M')
     if (current_time_str, current_time_str) not in form.time.choices:
         form.time.choices.append((current_time_str, current_time_str))
@@ -108,6 +117,12 @@ def edit_appt(appointment_id):
 
             db.session.commit()
             flash('Appointment updated successfully', 'success')
+            
+            # [FIX] Redirect to 'next' URL if present, otherwise dashboard
+            next_page = request.args.get('next')
+            if next_page:
+                return redirect(next_page)
+                
             return redirect(url_for('admin.dashboard'))
         except Exception as e:
             db.session.rollback()
@@ -126,7 +141,6 @@ def edit_appt(appointment_id):
 @admin_bp.route('/doctors')
 @login_required
 def view_doctors():
-    # Restrict access to admin only
     if current_user.role != 'Admin':
         flash('Access Denied', 'danger')
         return redirect(url_for('login'))
@@ -138,7 +152,6 @@ def view_doctors():
         func.count(case((Appointment.date == date.today(), Appointment.id))).label('today_count')
     ).outerjoin(Appointment).group_by(Doctor.id).all()
 
-        # Append data as a dict
     doctor_data = [{
         'id': doc.id,
         'name': doc.user.name if doc.user else 'N/A',
@@ -148,10 +161,7 @@ def view_doctors():
         'pending_count': pending_count
     } for doc, completed_count, pending_count, today_count in doctors_with_stats]
 
-    return render_template(
-        'admin/doctors.html',
-        doctors=doctor_data
-    )
+    return render_template('admin/doctors.html', doctors=doctor_data)
 
 @admin_bp.route('/doctor/<int:doctor_id>')
 @login_required
@@ -185,7 +195,8 @@ def view_doctor_detail(doctor_id):
         appointments=appointments,
         today_count=today_count,
         completed_count=completed_count,
-        pending_count=pending_count
+        pending_count=pending_count,
+        date=date
     )
 
 @admin_bp.route('/doctor/edit/<int:doctor_id>', methods = ["GET", "POST"])
@@ -206,6 +217,7 @@ def edit_doctor(doctor_id):
 
             form.available_days.data = list(days_set)
             form.available_slots.data = list(slots_set)
+
     if form.validate_on_submit():
         try:
             doctor.specialization = form.specialization.data
@@ -238,7 +250,6 @@ def edit_doctor(doctor_id):
 
     return render_template('admin/doctor_setup.html', form=form, edit_mode=True, doctor=doctor, entity='doctor')
 
-
 @admin_bp.route('/doctor/delete/<int:doctor_id>', methods=['GET', 'POST'])
 @login_required
 def delete_doctor(doctor_id):
@@ -258,9 +269,7 @@ def delete_doctor(doctor_id):
     flash('Doctor and associated data deleted successfully', 'success')
     return redirect(url_for('admin.view_doctors'))
 
-
 ### PATIENT MANAGEMENT ###
-
 
 @admin_bp.route('/patients')
 @login_required
@@ -292,7 +301,6 @@ def view_patients():
         })
     return render_template('admin/patients.html', patients=patients_data)
 
-
 @admin_bp.route('/patient/<int:patient_id>')
 @login_required
 def view_patient_detail(patient_id):
@@ -306,7 +314,6 @@ def view_patient_detail(patient_id):
 
     return render_template('admin/view_patient.html',appointment=appointments_list, patient=patient)
 
-
 @admin_bp.route('/patient/delete/<int:patient_id>', methods = ["GET", "POST"])
 @login_required
 def delete_patient(patient_id):
@@ -317,7 +324,6 @@ def delete_patient(patient_id):
     patient = Patient.query.get_or_404(patient_id)
     user = User.query.get(patient.user_id)
 
-    # Delete associated appointments and treatments
     for appt in patient.appointments:
         if appt.treatment:
             db.session.delete(appt.treatment)
@@ -352,7 +358,8 @@ def edit_patient(patient_id):
 
             db.session.commit()
             flash('Patient details updated successfully', 'success')
-            return redirect(url_for('admin.view_patients', patient_id=patient.id))
+            # [FIX] Redirect to detail view, not list view
+            return redirect(url_for('admin.view_patient_detail', patient_id=patient.id))
         
         except Exception as e:
             db.session.rollback()
