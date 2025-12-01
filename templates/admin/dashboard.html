@@ -11,8 +11,8 @@
         <thead>
                 <tr>
                         <th>Appointment ID</th>
-                        <th>Dcotor ID</th>
-                        <th>Dcotor Name</th>
+                        <th>Doctor ID</th>
+                        <th>Doctor Name</th>
                         <th>Patient Name</th>
                         <th>Problem</th>
                         <th>Date</th>
@@ -31,11 +31,7 @@
                         <td>{{ appt.date }}</td>
                         <td>{{ appt.time.strftime('%H:%M') }}</td>
                         <td>
-<<<<<<< HEAD
                         <form method="POST" action="{{ url_for('admin.delete_appointment', appointment_id=appt.id) }}" class="d-inline">
-=======
-                        <form method="POST" action="{{ url_for('admin.delete_appointment', appointment_id=appt.id) }}" style="display:inline;">
->>>>>>> 4238e7dbfe0a2d9cd0e5c96778c3d0e9a164a6ac
                                 <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                         </form>
                         <a href="{{ url_for('admin.edit_appt', appointment_id = appt.id) }}" class="btn btn-warning btn-sm">Edit</a>      
@@ -54,8 +50,8 @@
         <thead>
                 <tr>
                         <th>Appointment ID</th>
-                        <th>Dcotor ID</th>
-                        <th>Dcotor Name</th>
+                        <th>Doctor ID</th>
+                        <th>Doctor Name</th>
                         <th>Patient Name</th>
                         <th>Problem</th>
                         <th>Date</th>

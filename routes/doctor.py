@@ -118,12 +118,28 @@ def manage_slots():
     slots_display = []  # each item: {time, is_weekly, override, is_booked}
 
     if form.validate_on_submit():
-        # Save overrides: we will clear existing overrides for this date and create new ones for provided slots
+        # Save overrides: Clear existing overrides for this date and create new ones based on comparison
         selected_date = form.date.data
-        # delete existing overrides for that date
+        
+        # 1. Get standard weekly slots for this day
+        day_enum = get_weekday_enum_for_date(selected_date)
+        weekly_slots_objs = build_slots_from_availability(doctor, day_enum)
+        weekly_times = set(s[2] for s in weekly_slots_objs) # s[2] is the string label 'HH:MM'
+        
+        # 2. Get slots selected in the form
+        selected_slots = set(form.slots.data or [])
+        
+        # 3. Identify slots to BLOCK (Present in weekly, but unchecked in form)
+        to_block = weekly_times - selected_slots
+        
+        # 4. Identify slots to ADD (Not in weekly, but checked in form)
+        to_add = selected_slots - weekly_times
+        
+        # delete existing overrides for that date to start fresh
         DoctorAvailabilityOverride.query.filter_by(doctor_id=doctor.id, date=selected_date).delete()
-        selected_slots = form.slots.data or []
-        for slot_str in selected_slots:
+        
+        # Create BLOCKING overrides (is_available=False)
+        for slot_str in to_block:
             st = datetime.strptime(slot_str, '%H:%M').time()
             et = (datetime.combine(datetime.today(), st) + timedelta(minutes=30)).time()
             override = DoctorAvailabilityOverride(
@@ -131,12 +147,26 @@ def manage_slots():
                 date=selected_date,
                 start_time=st,
                 end_time=et,
-                is_available=True
+                is_available=False # Explicitly block
             )
             db.session.add(override)
+
+        # Create ADDING overrides (is_available=True)
+        for slot_str in to_add:
+            st = datetime.strptime(slot_str, '%H:%M').time()
+            et = (datetime.combine(datetime.today(), st) + timedelta(minutes=30)).time()
+            override = DoctorAvailabilityOverride(
+                doctor_id=doctor.id,
+                date=selected_date,
+                start_time=st,
+                end_time=et,
+                is_available=True # Explicitly available
+            )
+            db.session.add(override)
+            
         db.session.commit()
-        flash('Overrides saved for selected date.', 'success')
-        # If for some reason selected_date is None, redirect to manage_slots without query
+        flash('Availability updated for the selected date.', 'success')
+        
         if selected_date:
             return redirect(url_for('doctor.manage_slots') + f'?date={selected_date.strftime("%Y-%m-%d")}')
         return redirect(url_for('doctor.manage_slots'))

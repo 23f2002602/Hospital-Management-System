@@ -36,7 +36,7 @@ def view_appt():
         joinedload(Appointment.treatment)
     ).order_by(Appointment.date.desc(), Appointment.time.desc()).all()
 
-    return render_template('admin/appts.html', appoitments=all_appointments)
+    return render_template('admin/appts.html', appointments=all_appointments)
 
 @admin_bp.route('/appointment/delete/<int:appointment_id>', methods=['POST'])
 @login_required
@@ -48,7 +48,7 @@ def delete_appointment(appointment_id):
     appt = Appointment.query.get_or_404(appointment_id)
     db.session.delete(appt)
     db.session.commit()
-    flash('Appointment deleted scuccessfully', 'success')
+    flash('Appointment deleted successfully', 'success')
     return redirect(url_for('admin.dashboard'))
 
 @admin_bp.route('/appointment/<int:appointment_id>', methods=['GET', 'POST'])
@@ -61,12 +61,43 @@ def edit_appt(appointment_id):
     appt = Appointment.query.get_or_404(appointment_id)
     form = AppointmentForm(obj=appt)
 
+    # Populate doctor choices immediately (Required for validation)
     all_doctors = Doctor.query.join(User).all()
     form.doctor_id.choices = [
         (d.id, f"Dr. {d.user.name} ({d.specialization})") for d in all_doctors
     ]
 
-    form.patient_id.choices = [(appt.patient.id, appt.patient.user.name)]
+    # Handle Time Choices for Validation
+    # Determine which doctor and date to use (Form data takes precedence on POST)
+    target_doctor_id = appt.doctor_id
+    target_date = appt.date
+
+    if request.method == 'POST':
+        try:
+            target_doctor_id = int(request.form.get('doctor_id', appt.doctor_id))
+            date_str = request.form.get('date')
+            if date_str:
+                target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        except ValueError:
+            pass
+
+    # Fetch available slots for the target doctor/date
+    available_slots = []
+    if target_doctor_id and target_date:
+        day_enum = DayOfWeek[target_date.strftime('%A').upper()]
+        slots = DoctorAvailability.query.filter_by(
+            doctor_id=target_doctor_id, 
+            day=day_enum
+        ).order_by(DoctorAvailability.start_time).all()
+        available_slots = [(s.start_time.strftime('%H:%M'), s.start_time.strftime('%H:%M')) for s in slots]
+
+    form.time.choices = available_slots
+
+    # Ensure the current appointment time is in choices so validation doesn't fail on existing data
+    current_time_str = appt.time.strftime('%H:%M')
+    if (current_time_str, current_time_str) not in form.time.choices:
+        form.time.choices.append((current_time_str, current_time_str))
+        form.time.choices.sort()
 
     if form.validate_on_submit():
         try:
@@ -84,14 +115,11 @@ def edit_appt(appointment_id):
 
     if request.method == 'GET':
         form.doctor_id.data = appt.doctor_id
-        # We also need to populate available time slots for the currently selected doctor
-        if appt.doctor.availability:
-             slots = appt.doctor.availability.filter_by(day=DayOfWeek[appt.date.strftime('%A').upper()]).all()
-             form.time.choices = [(s.start_time.strftime('%H:%M'), s.start_time.strftime('%H:%M')) for s in slots]
+        form.date.data = appt.date
         form.time.data = appt.time.strftime('%H:%M')
+        form.problem.data = appt.problem
 
-
-    return render_template('admin/doctor_setup.html', form=form, edit_more = True, appointment=appt, entity = 'appointment')
+    return render_template('admin/doctor_setup.html', form=form, edit_mode=True, appointment=appt, entity='appointment')
 
 ### DOCTOR MANAGEMENT ###
 

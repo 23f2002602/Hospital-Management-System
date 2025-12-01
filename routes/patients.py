@@ -86,15 +86,52 @@ def edit_appt(appointment_id):
 
     form.doctor_id.choices = [(doc.id, f"Dr. {doc.user.name} - {doc.specialization}") for doc in doctors]
     
-    if form.validate_on_submit():
-        appt.doctor_id = form.doctor_id.data
-        appt.date = form.date.data
-        appt.time = form.time.data
-        appt.problem = form.problem.data
+    # --- FIX START: Populate choices before validation on POST ---
+    if request.method == 'POST':
+        # Attempt to get data from form properties or raw request if form not yet bound/validated
+        req_doctor_id = form.doctor_id.data
+        req_date = form.date.data
+        
+        # Fallback if form parsing didn't happen yet or failed
+        if not req_doctor_id and request.form.get('doctor_id'):
+            try: req_doctor_id = int(request.form.get('doctor_id'))
+            except: pass
+        if not req_date and request.form.get('date'):
+            try: req_date = datetime.strptime(request.form.get('date'), '%Y-%m-%d').date()
+            except: pass
 
-        db.session.commit()
-        flash('Appointment updated successfully.', 'success')
-        return redirect(url_for('patient.dashboard'))
+        if req_doctor_id and req_date:
+            available_slots = get_available_slots(req_doctor_id, req_date)
+            
+            # Important: If keeping the same doctor/date, ensure the current time is a valid choice
+            # even if get_available_slots (correctly) marks it as booked.
+            if req_doctor_id == appt.doctor_id and req_date == appt.date:
+                current_time_str = appt.time.strftime('%H:%M')
+                if current_time_str not in available_slots:
+                    available_slots.append(current_time_str)
+            
+            form.time.choices = [(slot, slot) for slot in sorted(available_slots)]
+        else:
+            form.time.choices = []
+    # --- FIX END ---
+
+    if form.validate_on_submit():
+        # If "Load Available Slots" was clicked, do not save; just re-render with slots (handled by choices logic above)
+        if 'load_slots' in request.form:
+             pass
+        else:
+            # Actual Update
+            appt.doctor_id = form.doctor_id.data
+            appt.date = form.date.data
+            try:
+                appt.time = datetime.strptime(form.time.data, '%H:%M').time()
+                appt.problem = form.problem.data
+
+                db.session.commit()
+                flash('Appointment updated successfully.', 'success')
+                return redirect(url_for('patient.dashboard'))
+            except ValueError:
+                flash('Invalid time format selected.', 'danger')
     
     elif request.method == 'GET':
         form.doctor_id.data = appt.doctor_id
